@@ -1,5 +1,5 @@
 /*
-This is the main file of the C++ side of the salmon programming languague - Ryan Vail 2022 Sep. 7th
+	This is the main file of the C++ side of the salmon programming languague - Ryan Vail 2022 Sep. 7th
 */
 
 // C++ includes
@@ -10,9 +10,12 @@ This is the main file of the C++ side of the salmon programming languague - Ryan
 // Local includes
 #include"tokenizer.cpp"
 #include"global.cpp"
+#include"token_reader.cpp"
+#include"var_types.cpp"
 
 // Definitions
 #define Version 0.0
+#define Debug 1 // If we are in debug mode
 
 // This loads in a file as a string and returns it
 std::vector<std::string> load_file(char file_name[])
@@ -21,6 +24,7 @@ std::vector<std::string> load_file(char file_name[])
 	file_handle.open(file_name);
 	std::vector<std::string> file_contents;
 	std::string file_line;
+	// TODO: The break clause should check at the # of bytes read rather than the line equaling "" because there's cases that doesn't happen
 	// This loop reads the file
 	while (true)
 	{

@@ -36,7 +36,7 @@ bool is_special(char &character)
 // This replaces multiple blank characters with 0 in ASCII and should be the only public function
 std::vector<char> blanker(std::vector<std::string> &file_contents)
 {
-	std::vector<char> formated_file;
+	std::vector<char> formated_file; // TODO: Change this from a vector of chars to a vector of strings
 	bool last_blank = true; // This is set to true so if the first character is a blank it doesn't get added
 	for (std::vector<std::string>::iterator file_itr = file_contents.begin(); file_itr != file_contents.end(); file_itr++)
 	{
