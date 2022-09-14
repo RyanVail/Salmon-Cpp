@@ -6,15 +6,16 @@
 #include<iostream>
 #include<fstream>
 #include<vector>
+#include<math.h> // TODO: math.h is only used for pow() in var_types.cpp so just rewrite that function
 
 // Local includes
 #include"tokenizer.cpp"
 #include"global.cpp"
-#include"token_reader.cpp"
 #include"var_types.cpp"
+#include"token_reader.cpp"
 
 // Definitions
-#define Version 0.0
+#define Version 0.0 // The version of the Salmon compiler
 #define Debug 1 // If we are in debug mode
 
 // This loads in a file as a string and returns it
@@ -39,6 +40,14 @@ int main(int argc, char *argv[])
 {
 	std::cout << "Compiling file " << argv[1] << " with V" << Version << "...\n";
 	std::vector<std::string> file_contents = load_file(argv[1]);
-	blanker(file_contents);
+	file_contents = blanker(file_contents);
+
+	// TEST
+	global globals;
+	// std::vector<std::string> file = { "u32", "[", "221", "+", "2", "*", "5", "]", "adsfsDFSC", "=", ";" };
+	read_var(globals, file_contents, 0);
+	//void read_var(global &globals, std::vector<std::string> &file, int location)
+	// TEST
+
 	return 0;
 }

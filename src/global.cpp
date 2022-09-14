@@ -11,6 +11,8 @@ struct variable
 	int const_value; // The constant value of the variable
 	int type; // The variable type
 	int list_length; // The length of the list if there is one
+	int stack_location; // The relative location on the stack this variable is at
+	int pointer; // If this variable is a pointer and how many pointers deep
 };
 
 // These are variables that are inputs to functions
@@ -18,6 +20,7 @@ struct input_variable
 {
 	std::string name;
 	int type;
+	int pointer; // If this variable is a pointer and how many pointers deep
 	bool used = false;
 };
 
@@ -47,13 +50,16 @@ struct while_statment
 // This is the global list of all other types of global structs 
 struct global
 {
+	// This is the assmebly of the file to be
+	std::vector<std::string> file_asm;
+
 	std::vector<function> functions;
 	std::vector<variable> variables;
 	std::vector<if_statment> if_statments;
 	std::vector<while_statment> while_statments;
 
 	// This returns true if the string is a name of a function otherwise false
-	bool is_a_function(std::string name)
+	bool is_a_fn(std::string name)
 	{
 		for (std::vector<function>::iterator f = functions.begin(); f != functions.end(); f++)
 		{
@@ -79,4 +85,32 @@ struct global
 		}
 		return false;
 	}
+
+	// This returns the var by the same name
+	variable get_var(std::string name)
+	{
+		for (std::vector<variable>::iterator v = variables.begin(); v != variables.end(); v++)
+		{
+			variable current_v = *v;
+			if (current_v.name == name)
+			{
+				return current_v;
+			}
+		}
+	}
+
+	// This retuns the function by the same name
+	function get_fn(std::string name)
+	{
+		for (std::vector<function>::iterator f = functions.begin(); f != functions.end(); f++)
+		{
+			function current_f = *f;
+			if (current_f.name == name)
+			{
+				return current_f;
+			}
+		}
+	}
 };
+
+// TODO: There should be a struct called location that stores the current line of the file we are currently in aswell as the token we are on so errors can contain line numbers

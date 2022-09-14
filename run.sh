@@ -1,4 +1,4 @@
-g++ ./src/main.cpp
+g++ ./src/main.cpp -g
 ./a.out test.txt
 
 #cd src

@@ -1,0 +1,24 @@
+fn main ( ) { u32 a = 0 ; }
+
+fn -> defining function
+main -> name of function
+( ) -> find the parentheses and save what's inside them for later use
+		Looking for '{'
+{ -> the start to the function
+u32 -> we are defining a variable
+a -> variable name
+		looking for a [length] signifing a list or = signifing single variable
+= -> variable asignment
+0 -> assignment value
+; -> end of variable assignment
+} -> the end of the function
+
+
+fns [ name: "main", id: 1, lines: [2,4] ]
+vars [ name: "a", id: 0, const: 1, type: 1, const_value: 0, used: 0 ]
+
+
+fn main()
+{
+	u32 input = 0;
+}
