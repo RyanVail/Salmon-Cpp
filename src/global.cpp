@@ -57,13 +57,6 @@ struct global
 	std::vector<variable> variables;
 	std::vector<if_statment> if_statments;
 	std::vector<while_statment> while_statments;
-	
-	// This is where or not we can return a value at a certain index of a variable
-	bool can_get_value_at(std::variable var, int index)
-	{
-		if (var.list_length > index && index >= 0) { return true; }
-		return false;
-	}
 
 	// This returns true if the string is a name of a function otherwise false
 	bool is_a_fn(std::string name)
@@ -101,6 +94,7 @@ struct global
 			variable current_v = *v;
 			if (current_v.name == name)
 			{
+				if (!current_v.in_scope) { throw std::runtime_error("Variable not in scope."); }
 				return current_v;
 			}
 		}
