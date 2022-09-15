@@ -1,5 +1,5 @@
 /*
-  This file handles things like turning a variable definition into assembly or a for loop - Ryan Vail 2022 Sep. 15th
+  This file handles turning lines into ASM - Ryan Vail 2022 Sep. 15th
 */
 
 struct asm_settings
@@ -15,12 +15,12 @@ struct asm_single_expression
   int computation; // If this node is a computation otherwise 0 and 1 is reserved for commas in function inputs
   variable var; // The variable of this node
   function function_call; // The function we are calling
-  asm_expression function_inputs; // The input(s) to the function
   int const_value; // The value of this node if it is constant
 }
 
 // This puts together the assembly of some computation
 // TODO: This function can only do operations between u32 and char
+// TODO: It would be very hard to do multiline optimizations with this function find a better way of doing this
 void expression_to_asm(global &globals, std::vector<std::string> &file, int location)
 {
   // This goes through and counts parentheses until it reaches a ';'
@@ -52,15 +52,24 @@ void expression_to_asm(global &globals, std::vector<std::string> &file, int loca
     // This evaluates what's between those parentheses first
     location = best.first;
     
-    //u32 a = return_this_value(3) + 5;
-    
+	// EX. With badly optimized ASM:
+    // u32 a = return_this_value(3 + 3) + 5;
+		// 3 + 3 -> return_this_value(6) -> 6 + 5
+			// mov r0, #3
+	  		// mov r1, #3 
+	 		// add r0, r1
+	  		// bl return_this_value
+    		// mov r1, #5
+	  		// add r0, r1
+	  
     // This should unwrap the expression removing paretheses and put it in the correct order using asm_single_expression
-    
-    // If the variable has a '(' right after it were calling a function
-      // If the variable isn't just letters we send an error
-      // The inputs to a function will also have commas so they will have to be preprocessed
+    // TODO: THIS SHOULD ALSO CHECK FOR BRACKETS AS WELL AS PARETHESES!
+	  
+    // If the variable has a '(' right after it without an operation seperating the two were calling a function
+     	 // If the variable isn't just letters we send an error
     // If the variable has a '[' right after it we are getting a certain index of an array
-      // We should check if that array itself and the array index is valid ie. in scope and of the valid length
+      	// We should check if that array itself and the array index is valid ie. in scope and of the valid length
+	// If the block we are working on only have commas we look for a function to the left of the '(' if we don't find one we send an error
   }
   
   /*
