@@ -79,3 +79,11 @@ int is_var_array(std::vector<std::string> &file, int location)
 	if (file[location+1] != "]") { throw std::runtime_error("Expected ]."); }
 	return get_str_num(file[location]);
 }
+
+// Checks if the variable can be read as a u32
+bool can_be_u32(variable var)
+{
+	if (var.type == 2) { throw std::runtime_error("Error cannot explicitly change type i32 to type u32."); }
+	if ((var.type == 1 || var.type == 3) && !var.list_length && var.in_scope && !var.pointer) { return true; }
+	return false;
+}
