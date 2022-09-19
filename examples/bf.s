@@ -7,6 +7,8 @@ _start:
   b reset_m_l
   
 main_loop:
+  cmp r0, #0
+  beq _end
   cmp r0, #62
   beq forward
   cmp r0, #60
@@ -54,7 +56,12 @@ closing:
 	reset:
 		ldrb r0, [r4, #-1]! // Incrament r4 backwards and load the char into r6
 		b c_loop
-  
+
+_end:
+  //mov r7, #1
+  //swi 0
+  b _end
+
 .data
 // > 62
 // < 60
@@ -62,5 +69,7 @@ closing:
 // ] 93
 	// If we hit a ']' go back and each time we go over a '[' add one and ']' sub one if we hit a '[' and we are at zero set the pointer there
 // + 43
-// - 45 
-file: .string "[->]"
+// - 45
+file: 
+	.string "[+>]++++"
+	.byte 0
