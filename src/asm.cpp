@@ -5,14 +5,14 @@
 struct asm_settings
 {
   debug = false; // If the asm has debug things attachted
-  std::vector<int> useable = {0,1,2,3} // The R0-R3 registers are useable
+  std::vector<int> useable = {0,1,2,3} // The R0-R3 registers that are useable
   int main[] = [0,1] // The main two registers used of doing computations
 }
 
 // TODO: Find a better way of doing this
 struct asm_single_expression
 {
-  int computation; // If this node is a computation otherwise 0 and 1 is reserved for commas in function inputs
+  int computation; // If this node is a computation otherwise 0 and 1 is reserved for commas in function inputs and list creation
   variable var; // The variable of this node
   function function_call; // The function we are calling
   int const_value; // The value of this node if it is constant
