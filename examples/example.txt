@@ -22,3 +22,18 @@ fn main()
 {
 	u32 input = 0;
 }
+
+// Runtime calculation example
+fn main()
+{
+	@{rtc;
+	u32 a = 3;
+	for (int i=0;i<2;i++)
+	{
+		a += 2;
+	}
+	return a;
+	@rtc};
+	// Which evaluates to
+	return 7;
+}
