@@ -23,7 +23,13 @@ fn main()
 	u32 input = 0;
 }
 
-// Runtime calculation example
+// compile calculation example
+// RULES
+	// - Only non const values are allowed.
+	// - Decleration of functions is not allowed inside runtime calcs.
+	// - The compiling will show "Running compile time calc. inside function main |/-\" (loading sign).
+	// - The code of a runtime calc. is put right into memory on a seperate thread to then be executed.
+	// - Returning a value calls a function that some how stores that value in a register or place in memory that isn't used.
 fn main()
 {
 	@{rtc;
