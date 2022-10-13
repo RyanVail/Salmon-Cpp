@@ -2,10 +2,16 @@
 This file handles tokenizing a file making further processing a simplier job - Ryan Vail 2022 Sep. 8th
 */
 
+// TODO: Some special characters shouldn't add spaces based on the new RPN system
+
+#pragma once
+
 #define blank_characters_len 4
 const char blank_characters[] = { 9, 10, 13, 32 };
-#define special_characters_len 18
-const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
+#define special_characters_len 12
+// Old special chars
+// const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
+const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')' };
 
 // Returns true if a character is a blank otherwise false
 bool is_blank(char &character)
@@ -59,8 +65,8 @@ std::vector<std::string> blanker(std::vector<std::string> &file_contents)
 			}
 			if (is_special(*str_itr))
 			{
-				if (!last_blank) 
-				{  
+				if (!last_blank)
+				{
 					formated_file.push_back(formated_string);
 					formated_string = "";
 				}

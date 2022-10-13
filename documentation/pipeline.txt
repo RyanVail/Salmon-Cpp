@@ -1,0 +1,25 @@
+
+LEXER
+	TOKENIZER
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INTERMEDIATE REPERSENTATION
+#	 FIRST PASS
+#		RPN SIZE >= 0 CHECK
+#		VARIABLE SYMBOL TABLE
+#		VARIALBE DECLERATIONS & TYPES
+#		TOKENS TO INTERMEDIATE
+		VARIABLE REDECLERATIONS
+		VARIABLE ACCESS
+		FUNCTION SYMBOL TABLE PASS
+		FUNCTION CALL APPROVALE
+	SECOND PASS
+		CONST COMPUTATIONS
+		COMPILE TIME OPTIMIZATIONS
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ASM
+	INTERMEDIATE TO ASM
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BINARY

@@ -6,17 +6,24 @@
 #include<iostream>
 #include<fstream>
 #include<vector>
-#include<math.h> // TODO: math.h is only used for pow() in var_types.cpp so just rewrite that function
+#include<math.h> // TODO: math.h is just used for pow in var_types
+
+// Definitions
+// TODO: Make these all caps
+#define Version 0.0 // The version of the Salmon compiler
+#define Debug 1 // If we are in debug mode
 
 // Local includes
 #include"tokenizer.cpp"
-#include"global.cpp"
+//#include"global.cpp"
 #include"var_types.cpp"
-#include"token_reader.cpp"
+#include"symbol_table.cpp"
+#include"intermediate.cpp"
+//#include"token_reader.cpp"
 
-// Definitions
-#define Version 0.0 // The version of the Salmon compiler
-#define Debug 1 // If we are in debug mode
+#if Debug
+	#include"debug.cpp"
+#endif
 
 // This loads in a file as a string and returns it
 std::vector<std::string> load_file(char file_name[])
@@ -38,16 +45,22 @@ std::vector<std::string> load_file(char file_name[])
 // This takes arguments
 int main(int argc, char *argv[])
 {
-	std::cout << "Compiling file " << argv[1] << " with V" << Version << "...\n";
+	std::cout << "Compiling file " << argv[1] << " with V" << Version << "...\n\n";
 	std::vector<std::string> file_contents = load_file(argv[1]);
 	file_contents = blanker(file_contents);
 
-	// TEST
+	// --- Test --- \\
 	global globals;
-	// std::vector<std::string> file = { "u32", "[", "221", "+", "2", "*", "5", "]", "adsfsDFSC", "=", ";" };
-	read_var(globals, file_contents, 0);
+	std::vector<std::string> file = { "u32", "a", "253", "=", "u32", "b", "23", "14", "+", "=", "fn", "main(u32 a, u32 b)" };
+	//std::vector<std::string> file = { "u32", "a", "3", "=", ";"};
+	////read_var(globals, file_contents, 0);
 	//void read_var(global &globals, std::vector<std::string> &file, int location)
-	// TEST
+	std::vector<inter> inter_file = file_into_inter(file);
+	#if Debug
+		std::cout << "\n\n";
+		print_symbol_table();
+	#endif
+	// --- TEST --- \\ 
 
 	return 0;
 }

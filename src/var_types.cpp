@@ -2,12 +2,32 @@
 	This file handles turning string based variable types into their corrisponding id - Ryan Vail 2022 Sep. 9th 
 */
 
-const std::vector<std::string> types = { "", "u32", "i32", "char" };
+// 0 is null type
+const std::vector<std::string> types = { "", "u32", "i32" };
+const int types_size[] = { 0, 4, 4 };
+// To be
+// const int types[] = { " ", "u32", "u16", "u8", "i32", "i16", "i8" };
+// const int types_size[] = { 0, 4, 2, 1, 4, 2, 1 }; // The size in bytes each type takes up
+// #define TYPES_SIZE 7
+#define TYPES_SIZE 3
+
+// This checks if a string is a valid type
+int is_type(std::string possible_type)
+{
+	for (int i=0; i < TYPES_SIZE; i++)
+	{
+		if (types[i] == possible_type)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
 
 // This either returns the variable id or 0
 int into_id(std::string &string_type)
 {
-	for (int i=1; i < types.size(); i++)
+	for (int i=1; i < TYPES_SIZE; i++)
 	{
 		if (types[i] == string_type)
 		{
@@ -18,9 +38,9 @@ int into_id(std::string &string_type)
 }
 
 // This turns a variable id into it's string counterpart or NULL if it isn't valid
-std::string id_into_string(int &var_id)
+std::string id_into_string(int var_id)
 {
-	if (var_id >= types.size() || var_id <= 0) { return NULL; }
+	if (var_id >= TYPES_SIZE || var_id <= 0) { return NULL; }
 	return types[var_id];
 }
 
@@ -63,6 +83,7 @@ bool is_str_letters(std::string &test_string)
 	return true;
 }
 
+/*
 // TODO: This should be able to take in constant values for array sizes too
 // This checks if the variable being defined is an array and if it is this returns the length of the var array and always returns the correct token to jump to
 int is_var_array(std::vector<std::string> &file, int location)
@@ -79,11 +100,4 @@ int is_var_array(std::vector<std::string> &file, int location)
 	if (file[location+1] != "]") { throw std::runtime_error("Expected ]."); }
 	return get_str_num(file[location]);
 }
-
-// Checks if the variable can be read as a u32
-bool can_be_u32(variable var)
-{
-	if (var.type == 2) { throw std::runtime_error("Error cannot explicitly change type i32 to type u32."); }
-	if ((var.type == 1 || var.type == 3) && !var.list_length && var.in_scope && !var.pointer) { return true; }
-	return false;
-}
+*/
