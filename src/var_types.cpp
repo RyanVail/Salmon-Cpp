@@ -5,11 +5,28 @@
 // 0 is null type
 const std::vector<std::string> types = { "", "u32", "i32" };
 const int types_size[] = { 0, 4, 4 };
+#define TYPES_SIZE 3
+const std::string invalid_names = { "if", "while", "else", "continue", "break", "return" };
+#define INVALID_NAMES_SIZE 6
+
 // To be
 // const int types[] = { " ", "u32", "u16", "u8", "i32", "i16", "i8" };
 // const int types_size[] = { 0, 4, 2, 1, 4, 2, 1 }; // The size in bytes each type takes up
 // #define TYPES_SIZE 7
-#define TYPES_SIZE 3
+
+// This checks if the given string is a valid name
+bool is_valid_name(std::string name)
+{
+	for (int i=0; i < INVALID_NAMES_SIZE; i++)
+	{
+		if (name == invalid_names[i]) { return false; }
+	}
+	for (int i=0; i < TYPES_SIZE; i++)
+	{
+		if (name == types[i]) { return false; }
+	}
+	return true;
+}
 
 // This checks if a string is a valid type
 int is_type(std::string possible_type)
