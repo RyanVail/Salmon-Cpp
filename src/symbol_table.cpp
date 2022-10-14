@@ -37,7 +37,7 @@ struct function_token
 };
 
 // The static symbol table
-symbols symbol_table;
+symbols symbol_table;{}
 
 // This returns a pointer to the variable token by the same name/id or a null pointer
 variable_token* get_variable_token(std::string name, int id = 0)
@@ -46,6 +46,25 @@ variable_token* get_variable_token(std::string name, int id = 0)
 	{
 		if (id) { if (itr->id == id) { return &*itr; } }
 		else { if (itr->name == name) { return &*itr; } }
+	}
+	return 0;
+}
+
+// This returns a pointer to the variable token by the same name/id in the same scope
+// TODO: This only checks owners not scope. Allow this to check scope
+variable_token* get_local_variable_token(int owner_to_check, std::string name, int id = 0)
+{
+	for (std::vector<variable_token>::iterator itr = symbol_table.variables.begin(); itr != symbol_table.variables.end(); itr++)
+	{
+		if (id)
+		{
+			// If we have the same id as the variable we are checking and the variable is in this scope or global scope
+			if (itr->id == id && (itr->owner == owner_to_check || itr->owner == -1)) { return &*itr; }
+		}
+		else
+		{
+			if (itr->name == name && (itr->owner == owner_to_check || itr->owner == -1)) { return &*itr; }
+		}
 	}
 	return 0;
 }
