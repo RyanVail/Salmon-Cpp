@@ -90,9 +90,7 @@ bool is_str_letters(std::string &test_string)
 {
 	for (std::string::iterator itr = test_string.begin(); itr != test_string.end(); itr++)
 	{
-		// 65-90 Uppercase
-		// 97-122 Lowercase
-		if ((*itr > 122 || *itr < 97) && (*itr > 90 || *itr < 65))
+		if (((*itr > 122 || *itr < 97) && (*itr > 90 || *itr < 65)) || *itr == '_') // If upercase and lowercase or '_'
 		{
 			return false;
 		}

@@ -37,7 +37,7 @@ struct function_token
 };
 
 // The static symbol table
-symbols symbol_table;{}
+symbols symbol_table;
 
 // This returns a pointer to the variable token by the same name/id or a null pointer
 variable_token* get_variable_token(std::string name, int id = 0)

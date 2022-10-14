@@ -13,14 +13,13 @@
 // TODO: Make these all caps
 #define Version 0.0 // The version of the Salmon compiler
 #define Debug 1 // If we are in debug mode
+unsigned char optimization_level = 0;
 
 // Local includes
 #include"tokenizer.cpp"
-//#include"global.cpp"
 #include"var_types.cpp"
 #include"symbol_table.cpp"
 #include"intermediate.cpp"
-//#include"token_reader.cpp"
 
 #if Debug
 	#include"debug.cpp"
@@ -50,13 +49,11 @@ int main(int argc, char *argv[])
 	std::vector<std::string> file_contents = load_file(argv[1]);
 	file_contents = blanker(file_contents);
 
-	// --- Test ---
 	std::vector<inter> inter_file = file_into_inter(file_contents);
 	#if Debug
 		std::cout << "\n\n";
 		print_symbol_table();
 	#endif
-	// --- TEST ---
 
 	return 0;
 }

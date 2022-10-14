@@ -11,7 +11,7 @@
 //  31			Adds a value to the RPN stack
 //  20 - 23		Removes a value from the RPN stack
 
-// The lower comments were made with a tab size of four
+// The comments below were made with a tab size of four
 #define VARIABLE_TYPE 0
 #define VARIABLE_DECLERATION 1
 #define VARIABLE_REASIGNMENT 2 // TODO: This is currently not used since it is done during the transfer to ASM but once opt. is added it will be needed
@@ -47,7 +47,6 @@
 #define CONST 31
 #define WHILE_BEGIN 32
 #define WHILE_END 33
-// TODO: The below functions need to be added to "debug.cpp"
 #define ELSE_BEGIN 34
 #define ELSE_END 35
 #define CONTINUE 36
@@ -102,14 +101,13 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 	if (is_str_letters(*itr))
 	{
 		// If the last intermediate token was a type we are defining a variable
-			// Otherwise we check the symbol table and assume we are accessing a variable
+		// Otherwise we check the symbol table and assume we are accessing a variable
 		if (inter_output.size() && inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
 		{
 			if (rpn_size) { std::cout << "There must be nothing on the RPN stack to define a variable.\n"; exit(-1); }
 			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
 			add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 			return inter(VARIABLE_DECLERATION, 0, *itr);
-			// We add the variable to the symbol table
 		}
 		// We check if the variable is in the symbol table, if not we send an error
 		if (!get_variable_token(*itr)) { std::cout << "Unkown variable: " << *itr << ".\n"; exit(-1); }
@@ -138,23 +136,34 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
 		if (rpn_size < 0) { std::cout << "RPN stack size fell below zero.\n"; exit(-1); }
+		// TODO: This should be a bunch of inline functions so it makes more sense
 		// If we have a constant
-		// TODO: These two function can be moved into single_into_inter
 		if (is_str_num(*itr))
 		{
 			inter_output.push_back(inter(CONST, get_str_num(*itr), ""));
 			rpn_size++;
 			continue;
 		}
+		// TODO: This comment removale shouldn't be done here it should be done in tokenizer
+		// If we are reading a comment
+		if (*itr == "/" && itr+1 != file.end() && *(itr+1) == "*")
+		{
+			while true
+			{
+				if (itr == file.end() || itr+1 == file.end()) { std::cout << "Expected to find */.\n"; exit(-1); }
+				if (*itr == "*" && *(itr+1) == "/") { itr+=2; break; }
+				itr++;
+			}
+			continue;
+		}
 		// If we hit a '$' meaning function call
-		// TODO: '$', '%', etc. are not special chars in "tokenizer.cpp" yet
 		if (*itr == "$") 
 		{
 			itr++; // Incraments itr placing us at the function name
 			// Makes sure the function call name is valid
 			if (!get_function_token(*itr)) { std::cout << "Unknown function: " << *itr << ".\n"; exit(-1); }
 			inter_output.push_back(inter(FUNC_CALL, get_function_token(*itr)->id, *itr));
-			// TODO: We need to get the input size of the function and subtract rpn size by that
+			rpn_size -= get_function_token(*itr)->variables.size(); // Shrinks the RPN stack size by the input variable size
 			continue;
 		}
 		// If we hit a '}'
@@ -168,6 +177,8 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		// If we hit a ';' and are defining the reset of the RPN stack
 		if (*itr == ";")
 		{
+			// If there is nothing in the stack we don't need to reset it
+			if (!rpn_size && optimization_level > 0) { continue; }
 			inter_output.push_back(inter(RESET_RPN, 0, ""));
 			rpn_size = 0;
 			continue;
@@ -200,17 +211,20 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			if(rpn_size) { std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; exit(-1); }
 			itr++;
 			std::string name = (*itr).substr(0, (*itr).find('(') );
+			// This checks for a lot of possible errors
 			if(!is_str_letters(name)) { std::cout << "The function name: " << name << " contains invalid characters.\n"; exit(-1); }
-			// TODO: This should make sure the name is valid
+			if(get_function_token(name)) { std::cout << "The function name: " << name << " is already used.\n"; exit(-1); }
+			if(!is_valid_name(name)) { std::cout << "The function name: " << name << " isn't valid.\n"; close(-1); }
 			add_function_token(name);
 			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 16;
 			// This reads through the input variables of the function
 			unsigned char current_type = 0; // The type of the current variable
 			int stack_space_needed = 0; // The stack space needed for all the input variables to the function
-			// TODO: Input variables shouldn't use stack space by default rather registers
+			// TODO: Input variables shouldn't use stack space by default, registers would be a lot better
 			while (true)
-			{ 
-				std::string token = *itr;
+			{
+				if (itr == file.end()) { std::cout << "Error while parsing function defintion: reached end of file.\n"; exit(-1); }
+				std::string token = *itr;>
 				if (token == ",") { itr++; continue; }
 				if (token == ")") { break; }
 				// TODO: Add default varaible assignment
@@ -243,6 +257,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		if ((inter_output[inter_output.size()-1].id >= VARIABLE_DECLERATION && inter_output[inter_output.size()-1].id <= VARIABLE_ACCESS)) { rpn_size++; }
 		if ((inter_output[inter_output.size()-1].id >= 20 && inter_output[inter_output.size()-1].id <= 23) || (inter_output[inter_output.size()-1].id >= 8 && inter_output[inter_output.size()-1].id <= 19)) { rpn_size--; }
 	}
+	// Prints all intermediates if we are in debug mode
 	#if Debug
 		for (std::vector<inter>::iterator itr = inter_output.begin(); itr != inter_output.end(); itr++) { print_inter(*itr); }
 	#endif

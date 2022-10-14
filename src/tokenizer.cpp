@@ -11,7 +11,7 @@ const char blank_characters[] = { 9, 10, 13, 32 };
 #define special_characters_len 12
 // Old special chars
 // const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
-const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')' };
+const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@' };
 
 // Returns true if a character is a blank otherwise false
 bool is_blank(char &character)
