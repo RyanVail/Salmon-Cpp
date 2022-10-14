@@ -62,7 +62,7 @@ struct inter
 {
 	// id should be type and be a unsigned char
 	int id; // This is the id of the intermediate token
-	int value; // This is a value or variable type id or a pointer to the string value
+	int value; // This is a value or variable type id
 	std::string refrenced_name; // This is the name of the function or variable that is refrenced
 	inter(unsigned char id_value, int value_value, std::string refrenced_name_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value) {};
 };
@@ -98,9 +98,6 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 	if (*itr == "return") { inter_output.push_back(inter(RETURN, 0, "")); }
 	if (*itr == "break") { inter_output.push_back(inter(BREAK, 0, "")); }
 	if (*itr == "continue") { inter_output.push_back(inter(CONTINUE, 0, "")); }
-	// TODO: We should check if we are calling a function here
-	// If we are calling a function we need to get the input size of the function and subtract rpn size by that
-
 	// This checks if the string is a valid variable
 	if (is_str_letters(*itr))
 	{
@@ -149,7 +146,17 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			rpn_size++;
 			continue;
 		}
-		// If we hit a 
+		// If we hit a '$' meaning function call
+		// TODO: '$', '%', etc. are not special chars in "tokenizer.cpp" yet
+		if (*itr == "$") 
+		{
+			itr++; // Incraments itr placing us at the function name
+			// Makes sure the function call name is valid
+			if (!get_function_token(*itr)) { std::cout << "Unknown function: " << *itr << ".\n"; exit(-1); }
+			inter_output.push_back(inter(FUNC_CALL, get_function_token(*itr)->id, *itr));
+			// TODO: We need to get the input size of the function and subtract rpn size by that
+			continue;
+		}
 		// If we hit a '}'
 		if (*itr == "}")
 		{
