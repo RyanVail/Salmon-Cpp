@@ -47,6 +47,12 @@
 #define CONST 31
 #define WHILE_BEGIN 32
 #define WHILE_END 33
+// TODO: The below functions need to be added to "debug.cpp"
+#define ELSE_BEGIN 34
+#define ELSE_END 35
+#define CONTINUE 36
+#define BREAK 37
+#define RETURN 38
 
 // TODO: Add continue
 // TODO: Add break
@@ -89,9 +95,9 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 	if (*itr == "-") { return inter(SUB, 0, ""); }
 	if (*itr == "/") { return inter(DIV, 0, ""); }
 	if (*itr == "*") { return inter(MUL, 0, ""); }
-	if (*itr == "if") { return inter(IF_BEGIN, 0, ""); }
-	if (*itr == "while") { return inter(WHILE_BEGIN, 0, ""); }
-
+	if (*itr == "return") { inter_output.push_back(inter(RETURN, 0, "")); }
+	if (*itr == "break") { inter_output.push_back(inter(BREAK, 0, "")); }
+	if (*itr == "continue") { inter_output.push_back(inter(CONTINUE, 0, "")); }
 	// TODO: We should check if we are calling a function here
 	// If we are calling a function we need to get the input size of the function and subtract rpn size by that
 
@@ -143,6 +149,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			rpn_size++;
 			continue;
 		}
+		// If we hit a 
 		// If we hit a '}'
 		if (*itr == "}")
 		{
@@ -163,6 +170,15 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		{
 			inter_output.push_back(inter(IF_BEGIN, 0, ""));
 			statment_stack.push(inter(IF_END, 0, ""));
+			if (*(itr+1) != "{") { std::cout << "Expected '{' after an if statment.\n"; exit(-1); }
+		}
+		// If we have a else statment
+		if (*itr == "else")
+		{
+			if (inter_output[inter_output.size()-1].id != IF_END) { std::cout << "Expected an end to an if statment before an else statment.\n"; exit(-1); }
+			if (*(itr+1) != "{" && *(itr+1) != "if") { std::cout << "Expected '{' or if statment after else statment.\n"; exit(-1); }
+			inter_output.push_back(inter(ELSE_BEGIN, 0, ""));
+			statment_stack.push(inter(ELSE_END, 0, ""));
 		}
 		// If we have a while loop
 		if (*itr == "while")
@@ -210,6 +226,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			itr += 1;
 			inter_output.push_back(inter(FUNC_BEGIN, 0, ""));
 			statment_stack.push(inter(FUNC_END, 0, ""));
+			if (*(itr+1) != "{") { std::cout << "Expected '{' after a function defintion.\n"; exit(-1); }
 			continue;
 		}
 		// This turns any remaining tokens into their intermediate forms
