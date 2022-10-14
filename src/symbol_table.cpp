@@ -31,7 +31,7 @@ struct function_token
 {
 	std::string name;
 	int id;
-	std::vector<unsigned char> inputs; // This is a vector of the types that the function takes as inputs
+	std::vector<variable_token> inputs; // This is a vector of the variables the function takes as an input
 	unsigned char output; // This is the output type
 	int stack_space_needed; // The amount of bytes needed of stack space
 };

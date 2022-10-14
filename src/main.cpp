@@ -49,18 +49,13 @@ int main(int argc, char *argv[])
 	std::vector<std::string> file_contents = load_file(argv[1]);
 	file_contents = blanker(file_contents);
 
-	// --- Test --- \\
-	global globals;
-	std::vector<std::string> file = { "u32", "a", "253", "=", "u32", "b", "23", "14", "+", "=", "fn", "main(u32 a, u32 b)" };
-	//std::vector<std::string> file = { "u32", "a", "3", "=", ";"};
-	////read_var(globals, file_contents, 0);
-	//void read_var(global &globals, std::vector<std::string> &file, int location)
-	std::vector<inter> inter_file = file_into_inter(file);
+	// --- Test ---
+	std::vector<inter> inter_file = file_into_inter(file_contents);
 	#if Debug
 		std::cout << "\n\n";
 		print_symbol_table();
 	#endif
-	// --- TEST --- \\ 
+	// --- TEST ---
 
 	return 0;
 }

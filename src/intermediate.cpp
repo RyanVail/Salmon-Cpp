@@ -102,7 +102,7 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 		if (inter_output.size() && inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
 		{
 			if (rpn_size) { std::cout << "There must be nothing on the RPN stack to define a variable.\n"; exit(-1); }
-			current_stack -= 4;
+			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
 			add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 			return inter(VARIABLE_DECLERATION, 0, *itr);
 			// We add the variable to the symbol table
@@ -159,14 +159,41 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		if (*itr == "fn")
 		{
 			// fn fib(u32 a, u32 b) { }
-			// current_owner = ;
+			if (current_owner != -1) { std::cout << "Function defintion inside another function is not valid.\n"; exit(-1); }
 			if(rpn_size) { std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; exit(-1); }
-			current_stack = 0;
 			itr++;
 			std::string name = (*itr).substr(0, (*itr).find('(') );
 			if(!is_str_letters(name)) { std::cout << "The function name: " << name << " contains invalid characters.\n"; exit(-1); }
+			// TODO: This should make sure the name is valid
 			add_function_token(name);
 			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 16;
+			// This reads through the input variables of the function
+			unsigned char current_type = 0; // The type of the current variable
+			int stack_space_needed = 0; // The stack space needed for all the input variables to the function
+			// TODO: Input variables shouldn't use stack space by default rather registers
+			while (true)
+			{ 
+				std::string token = *itr;
+				std::cout << token << "\n";
+				if (token == ",") { itr++; continue; }
+				if (token == ")") { break; }
+				// TODO: Add default varaible assignment
+				if (token == "=") { std::cout << "Variable default assignemt has not been added yet.\n"; exit(-1); }
+				// If this token is the variable name
+				if (current_type) 
+				{
+					// This checks if there is another variable with the same name
+					// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner
+					// TODO: This should check if the variable name is valid
+					if (get_variable_token(token)) { std::cout << "A variable with that name already exists.\n"; exit(-1); }
+					stack_space_needed -= types_size[current_type];
+					add_variable_token(token, current_type, symbol_table.functions.size()-1, stack_space_needed);
+					current_type = 0;
+				}
+				// If this variable is the type
+				else { current_type = into_id(token); }
+				itr++;
+			}
 		}
 		// This turns any remaining tokens into their intermediate forms
 		inter_output.push_back(single_into_inter(&(*itr),inter_output,rpn_size,current_owner,current_stack));
@@ -179,5 +206,6 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			std::cout << "RPN Size: " << rpn_size << "\n\n";
 		#endif
 	}
+	symbol_table.stack_space_needed = current_stack;
 	return inter_output;
 }
