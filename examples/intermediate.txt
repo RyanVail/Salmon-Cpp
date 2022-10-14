@@ -1,0 +1,106 @@
+/* This file shows some examples for what the intermediate code will look like. -Ryan Vail Sep. 4th 2022 */
+
+// Intermediate tokens that require one value on the RPN stack
+	// '!', '&', '~'
+
+// Actual code
+
+fn main() -> u32
+{
+	a:u32 234 =;
+	b:u32 432 =;
+	c:u32 a b + =;
+	c return();
+}
+
+// Intermediate example
+/*
+FUNC "main"
+	--- INFO ---
+	INPUTS
+		VOID
+	RETURN
+		U32
+	STACK SPACE
+		U32 8	
+	--- INFO ---
+	RESET RPN STACK
+		VAR DECLERATION "a"
+		I32 234
+		EQUAL
+	RESET RPN STACK
+		VAR DECLERATION "b"
+		I32 432
+	RESET RPN STACK
+		VAR DECLERATION "c"
+		VAR ACCESS "a"
+		VAR ACCESS "b"
+		ADD
+		EQUAL
+	RESET RPN STACK
+		VAR ACCESS "c"
+		RETURN
+FUNC END
+*/
+
+// ASM
+/* 
+main:
+	- {
+		sub sp, #8
+	- int a 234 =;
+		mov r0, #234
+		str r0, [sp, #4]
+	- int b 432 =;	
+		mov r0, #432
+		str r0, [sp, #8]
+	- int c a b + =;
+		ldr r0, [sp, #8]
+		ldr r1, [sp, #4]
+		add r0, r1
+		str r0, [sp, #4]
+	- c return();
+		ldr r0, [sp, #8]
+	- }
+		bx lr
+*/
+
+
+
+// If and while example
+
+// Real code
+fn main() -> u32 
+{
+	a:u32 3 =;
+	a while
+	{
+		a--;
+		a
+	}
+}
+
+// Intermediate code example
+/*
+FUNC "main"
+	--- INFO ---
+	INPUTS
+		VOID
+	RETURN
+		U32
+	STACK SPACE
+		U32 4   
+	--- INFO ---
+	RESET RPN STACK
+         VAR DECLERATION "a"
+         I32 3
+         EQUAL
+	RESET RPN STACK
+		VAR ACCESS "a"
+		WHILE
+			VAR DECRAMENT "a"
+			RESET RPN STACK
+			VAR ACCESS "a"
+		WHILE END
+FUNC END
+*/

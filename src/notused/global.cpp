@@ -30,7 +30,7 @@ struct function
 	int id = 0; // ID one is the main function
 	bool used = false; // If the function is used
 	int scope[2]; // The starting and ending lines of the function
-	std::vector<variable> inputs; // These are the inputs to the function
+	std::vector<input_variable> inputs; // These are the inputs to the function
 };
 
 struct if_statment
@@ -94,6 +94,7 @@ struct global
 			variable current_v = *v;
 			if (current_v.name == name)
 			{
+				if (!current_v.in_scope) { throw std::runtime_error("Variable not in scope."); }
 				return current_v;
 			}
 		}

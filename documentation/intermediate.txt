@@ -1,0 +1,32 @@
+INTERMEDIATE TOKENS
+	VARIABLE TOKENS
+		VARIABLE TYPE // ':'
+		VARIABLE DECLERATION
+		VARIABLE REASIGNMENT
+		VARIABLE ACCESS
+	EVALUATION TOKENS
+		SINGLE EVALUATION TOKENS
+			NOT // '!'
+			GET // '@'
+			MEMADDRS // '%'
+			INCRAMENT // "++"
+			DECRAMENT // "--"
+	DOUBLE EVALUATION TOKENS
+			BITWISE
+				AND // '&'
+				OR // '|'
+				XOR // '^'
+				LSL // "<<"
+				LSR // ">>"
+			COMPARISON
+				EQUAL // '='
+				ISEQUAL // "=="
+				LESS // '<'
+				LESSEQUAL // "<="
+				GREATER // '>'
+				GREATEREQUAL // ">="
+			MATH
+				ADD // '+'
+				SUB // '-'
+				DIV // '/'
+				MUL // '*'

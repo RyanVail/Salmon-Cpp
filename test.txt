@@ -1,1 +1,9 @@
-u32[] a = 23;
+/* 
+    MULTILINE COMMENT
+*/
+u32 a 253 = ;
+u32 b 23 a + = ;
+fn main(u32 c, u32 d)
+{
+    152 $std_print_int ;
+}
