@@ -7,6 +7,7 @@
 #include<fstream>
 #include<vector>
 #include<math.h> // TODO: math.h is just used for pow in var_types
+#include<stack>
 
 // Definitions
 // TODO: Make these all caps

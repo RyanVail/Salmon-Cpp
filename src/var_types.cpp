@@ -21,7 +21,7 @@ int is_type(std::string possible_type)
 			return i;
 		}
 	}
-	return -1;
+	return -1; // TODO: This should return 0 like the function bellow and all calls of this function need to be fixed after that
 }
 
 // This either returns the variable id or 0

@@ -4,6 +4,7 @@
 
 #include<vector>
 #include<iostream>
+#include<stack>
 
 // TODO: Remove these when reordering the intermediate tokens
 //  3			Adds a value to the RPN stack
@@ -112,19 +113,21 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 		return inter(VARIABLE_NAME, 0, *itr);
 	}
 	// This checks if it's a type
-	if (is_type(*itr))
+	if (is_type(*itr) != -1)
 	{
+		std::cout << is_type(*itr) << "\n";
 		return inter(VARIABLE_TYPE, 0, *itr);
 		// If we have a type we need to make the last token into this type
 			// If the last token is a variable name offload the type decleration to the symbol table
 			// If the last token is a constant just set the first char of the string to the type's id
 	}
-	std::cout << "Unknown token.\n";
+	std::cout << "Unknown token: " << *itr << ".\n";
 	exit(-1);
 }
 // This turns a file into a series of inters
 std::vector<inter> file_into_inter(std::vector<std::string> &file)
 {
+	std::stack<inter> statment_stack;
 	std::vector<inter> inter_output;
 	int rpn_size = 0;
 	int current_owner = -1; // If there is a variable defintion this will be the value of the owner
@@ -137,11 +140,15 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		if (is_str_num(*itr))
 		{
 			inter_output.push_back(inter(CONST, get_str_num(*itr), ""));
-			#if Debug
-				print_inter(inter_output[inter_output.size()-1]);
-				rpn_size++;
-			std::cout << "RPN Size: " << rpn_size << "\n\n";
-			#endif
+			rpn_size++;
+			continue;
+		}
+		// If we hit a '}'
+		if (*itr == "}")
+		{
+			if (statment_stack.empty()) { std::cout << "Unexpected '}'.\n"; exit(-1); }
+			inter_output.push_back(statment_stack.top());
+			statment_stack.pop();
 			continue;
 		}
 		// If we hit a ';' and are defining the reset of the RPN stack
@@ -149,16 +156,23 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		{
 			inter_output.push_back(inter(RESET_RPN, 0, ""));
 			rpn_size = 0;
-			#if Debug
-				print_inter(inter_output[inter_output.size()-1]);
-				std::cout << "RPN Size: " << rpn_size << "\n\n";
-			#endif
 			continue;
+		}
+		// If we have an if statment
+		if (*itr == "if")
+		{
+			inter_output.push_back(inter(IF_BEGIN, 0, ""));
+			statment_stack.push(inter(IF_END, 0, ""));
+		}
+		// If we have a while loop
+		if (*itr == "while")
+		{
+			inter_output.push_back(inter(WHILE_BEGIN, 0, ""));
+			statment_stack.push(inter(WHILE_END, 0, ""));
 		}
 		// If we are defining a function
 		if (*itr == "fn")
 		{
-			// fn fib(u32 a, u32 b) { }
 			if (current_owner != -1) { std::cout << "Function defintion inside another function is not valid.\n"; exit(-1); }
 			if(rpn_size) { std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; exit(-1); }
 			itr++;
@@ -174,7 +188,6 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			while (true)
 			{ 
 				std::string token = *itr;
-				std::cout << token << "\n";
 				if (token == ",") { itr++; continue; }
 				if (token == ")") { break; }
 				// TODO: Add default varaible assignment
@@ -194,6 +207,10 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 				else { current_type = into_id(token); }
 				itr++;
 			}
+			itr += 1;
+			inter_output.push_back(inter(FUNC_BEGIN, 0, ""));
+			statment_stack.push(inter(FUNC_END, 0, ""));
+			continue;
 		}
 		// This turns any remaining tokens into their intermediate forms
 		inter_output.push_back(single_into_inter(&(*itr),inter_output,rpn_size,current_owner,current_stack));
@@ -201,11 +218,10 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		if (inter_output[inter_output.size()-1].id == EQUAL) { rpn_size--; }
 		if ((inter_output[inter_output.size()-1].id >= VARIABLE_DECLERATION && inter_output[inter_output.size()-1].id <= VARIABLE_ACCESS)) { rpn_size++; }
 		if ((inter_output[inter_output.size()-1].id >= 20 && inter_output[inter_output.size()-1].id <= 23) || (inter_output[inter_output.size()-1].id >= 8 && inter_output[inter_output.size()-1].id <= 19)) { rpn_size--; }
-		#if Debug
-			print_inter(inter_output[inter_output.size()-1]);
-			std::cout << "RPN Size: " << rpn_size << "\n\n";
-		#endif
 	}
+	#if Debug
+		for (std::vector<inter>::iterator itr = inter_output.begin(); itr != inter_output.end(); itr++) { print_inter(*itr); }
+	#endif
 	symbol_table.stack_space_needed = current_stack;
 	return inter_output;
 }

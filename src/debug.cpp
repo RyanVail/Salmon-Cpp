@@ -2,7 +2,7 @@
 
 #pragma once
 
-const std::string INTERS[] = { "VARIABLE_TYPE", "VARIABLE_DECLERATION", "VARIABLE_REASIGNMENT", "VARIABLE_ACCESS", "NOT", "GET", "MEM_ADDRS", "INCRAMENT", "DECRAMENT", "AND", "OR", "XOR", "LSL", "LSR", "EQUAL", "IS_EQUAL", "LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL", "ADD", "SUB", "DIV", "MUL", "FUNC_BEGIN", "FUNC_END", "UNKNOWN", "UNKNOWN", "UNKNOWN", "VARIABLE_NAME", "RESET_RPN", "CONST" };
+const std::string INTERS[] = { "VARIABLE_TYPE", "VARIABLE_DECLERATION", "VARIABLE_REASIGNMENT", "VARIABLE_ACCESS", "NOT", "GET", "MEM_ADDRS", "INCRAMENT", "DECRAMENT", "AND", "OR", "XOR", "LSL", "LSR", "EQUAL", "IS_EQUAL", "LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL", "ADD", "SUB", "DIV", "MUL", "FUNC_BEGIN", "FUNC_END", "FUNC_CALL", "IF_BEGIN", "IF_END", "VARIABLE_NAME", "RESET_RPN", "CONST", "WHILE_BEGIN", "WHILE_END" };
 
 // TODO: This should just print the string in a vector at the index
 // This takes in a intermediate id and prints the id
