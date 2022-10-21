@@ -8,7 +8,8 @@ This file handles tokenizing a file making further processing a simplier job - R
 
 #define blank_characters_len 4
 const char blank_characters[] = { 9, 10, 13, 32 };
-#define special_characters_len 12
+#define special_characters_len 15
+// TODO: The length's don't need to be constants
 // Old special chars
 // const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
 const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@' };

@@ -2,11 +2,13 @@
 	This file handles turning string based variable types into their corrisponding id - Ryan Vail 2022 Sep. 9th 
 */
 
+#pragma once
+
 // 0 is null type
 const std::vector<std::string> types = { "", "u32", "i32" };
 const int types_size[] = { 0, 4, 4 };
 #define TYPES_SIZE 3
-const std::string invalid_names = { "if", "while", "else", "continue", "break", "return" };
+const std::vector<std::string> invalid_names = { "if", "while", "else", "continue", "break", "return" };
 #define INVALID_NAMES_SIZE 6
 
 // To be
@@ -97,22 +99,3 @@ bool is_str_letters(std::string &test_string)
 	}
 	return true;
 }
-
-/*
-// TODO: This should be able to take in constant values for array sizes too
-// This checks if the variable being defined is an array and if it is this returns the length of the var array and always returns the correct token to jump to
-int is_var_array(std::vector<std::string> &file, int location)
-{
-	// If this isn't a list
-	if (file[location-1] != "[") { return -1; }
-
-	// This makes sure we have a number for the length of the array
-	if (!is_str_num(file[location])) 
-	{
-		if (file[location] == "?") { throw std::runtime_error("Vectors are currently not supported."); }
-		else { throw std::runtime_error("Error expected a number in array size."); }
-	}
-	if (file[location+1] != "]") { throw std::runtime_error("Expected ]."); }
-	return get_str_num(file[location]);
-}
-*/

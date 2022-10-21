@@ -2,11 +2,12 @@
 	This is the main file of the C++ side of the salmon programming languague - Ryan Vail 2022 Sep. 7th
 */
 
-// C++ includes
+#pragma once
+
 #include<iostream>
 #include<fstream>
 #include<vector>
-#include<math.h> // TODO: math.h is just used for pow in var_types
+#include<math.h> // TODO: math.h is just used for pow in var_types. Just rewrite it!
 #include<stack>
 
 // Definitions
@@ -14,12 +15,14 @@
 #define Version 0.0 // The version of the Salmon compiler
 #define Debug 1 // If we are in debug mode
 unsigned char optimization_level = 0;
+unsigned char compilation_target = 0;
+#define AARCH32_COMPILATION_TARGET 0
 
-// Local includes
 #include"tokenizer.cpp"
 #include"var_types.cpp"
 #include"symbol_table.cpp"
-#include"intermediate.cpp"
+#include"intermediate/intermediate.cpp"
+#include"asm/aarch32_asm.cpp"
 
 #if Debug
 	#include"debug.cpp"
@@ -37,7 +40,7 @@ std::vector<std::string> load_file(char file_name[])
 	while (true)
 	{
 		std::getline(file_handle, file_line);
-		if (file_line == "") { return file_contents; }
+		if (file_line[0] == 0) { return file_contents; }
 		file_contents.push_back(file_line);
 	}
 }
@@ -45,6 +48,7 @@ std::vector<std::string> load_file(char file_name[])
 // This takes arguments
 int main(int argc, char *argv[])
 {
+	// TODO: Add compile arguments
 	std::cout << "Compiling file " << argv[1] << " with V" << Version << "...\n\n";
 	std::vector<std::string> file_contents = load_file(argv[1]);
 	file_contents = blanker(file_contents);
@@ -54,6 +58,18 @@ int main(int argc, char *argv[])
 		std::cout << "\n\n";
 		print_symbol_table();
 	#endif
-
+	
+	// Computes function stack sizes
+	compute_function_stack_size();
+	std::vector<std::string> output_asm;
+	if (compilation_target == AARCH32_COMPILATION_TARGET) 
+	{ 
+		output_asm = aarch32_asm::intermediates_into_asm(inter_file);
+	}
+	else { std::cout << "Error while choosing compilation target.\n"; exit(-1); }
+	for (std::string current_asm : output_asm)
+	{
+		std::cout << current_asm << "\n";
+	}
 	return 0;
 }

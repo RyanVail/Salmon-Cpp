@@ -4,6 +4,7 @@
 
 #include<vector>
 #include<iostream>
+#include"var_types.cpp"
 
 // Forward struct defintions
 struct variable_token;
@@ -33,7 +34,7 @@ struct function_token
 	int id;
 	std::vector<variable_token> inputs; // This is a vector of the variables the function takes as an input
 	unsigned char output; // This is the output type
-	int stack_space_needed; // The amount of bytes needed of stack space
+	int stack_space_needed = 0; // The amount of bytes needed of stack space
 };
 
 // The static symbol table
@@ -49,6 +50,19 @@ variable_token* get_variable_token(std::string name, int id = 0)
 	}
 	return 0;
 }
+
+// This calculates the value that will be subtraced from the stack pointer
+void compute_function_stack_size()
+{
+	for (function_token current_function : symbol_table.functions)
+	{
+		for (variable_token current_variable : current_function.inputs)
+		{
+			current_function.stack_space_needed += types_size[current_variable.type];
+		}
+	}
+}
+
 
 // This returns a pointer to the variable token by the same name/id in the same scope
 // TODO: This only checks owners not scope. Allow this to check scope
