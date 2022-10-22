@@ -1,24 +1,22 @@
-
 - LEXER:
 	- TOKENIZER
 
 - INTERMEDIATE REPERSENTATION:
-	- FIRST PASS:
+	- FIRST PASS: <Const computations can be done during the first pass along size better RPN managment with only two values on the stack at a time tWo value on the stack also removes dead values on the stack>
+		- TOKENS TO INTERMEDIATE
+		- DEFINTION ASSIGNMENT
 		- DEFINTION SUBSITUTION
 		- COMMENT REMOVAL
 		- VARIABLE SYMBOL TABLE
 		- VARIALBE DECLERATIONS & TYPES <Variable types should be handled in intermediate to asm>
-		- TOKENS TO INTERMEDIATE
 		- VARIABLE REDECLERATIONS
 		- VARIABLE ACCESS
 		- FUNCTION SYMBOL TABLE
 		- FUNCTION CALLS
+	- FUNCTION SIZE CALC
 	- SECOND PASS / OPTIMIZATION PASS:
-		- CONST COMPUTATIONS
 		- COMPILE TIME OPTIMIZATIONS
 		- DEAD CODE REMOVAL
-	- THIRD PASS:
-		- FUNCTION STACK SIZE CACULATOR
 
 - ASM:
 	- INTERMEDIATE TO ASM

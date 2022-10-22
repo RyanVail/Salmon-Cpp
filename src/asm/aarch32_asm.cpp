@@ -175,14 +175,13 @@ inline std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter
     std::vector<std::string> asm_file = { ".ASM\n.GLOBAL fn_main\n.TEXT\nfn_end:\nMOV R7, #1\nSWI 0\n" };
     std::stack<value_defintion> rpn_stack;
     std::stack<statment_defintion> statment_stack; // 0 -> function call, 1 -> while, 2 -> if, 3 -> return, 4 -> break, 5-> continue
-    // TODO: We need a rpn value stack here
-    unsigned int current_statment_id = 0; // This is just a little bit of padding added to the end of branch points to make sure they are seperate
-    // TODO: I can't think of the word above. "branch point" is not it                            ^^^^^^^^^^^^^
+    unsigned int current_statment_id = 0; // This is just a little bit of padding added to the end of branch points to make sure they are seperate                          ^^^^^^^^^^^^^
     bool in_func = 0; // If we are inside a function ie. if we are adding the asm to asm_file or asm_functions
     value_defintion registers_used[2] = { value_defintion(0, 0, 0, 0), value_defintion(0, 0, 0, 0) }; // The values in R0-R7. Currently only supports R0 and R1. This should have its own struct because we can't relly on consts anymore we just need the type
     unsigned char current_inter_id; // The current intermediate's id hopefully in a register
     for (inter current_inter : inter_file)
     {
+        // TODO: This should track owner and it should only get variables that are local to that owner (and owenr)
         current_inter_id = current_inter.id;
         std::cout << "ID: " << (int)current_inter_id << "\n";
         single_intermediate_into_asm(current_inter, rpn_stack, statment_stack, in_func, asm_functions, asm_file, registers_used);
@@ -198,7 +197,11 @@ inline std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter
             in_func = true;
             statment_stack.push(statment_defintion(0, "fn_" + current_inter.refrenced_name));
             asm_functions.push_back("");
-            add_asm(in_func, "fn_" + current_inter.refrenced_name + ":\n", asm_file, asm_functions);
+            add_asm(in_func, "fn_" + current_inter.refrenced_name + ":\n" + "SUB SP, #"+ std::to_string(get_function_token(current_inter.refrenced_name).stack_space_needed) + "\n", asm_file, asm_functions);
+            for (variable_token current_variable : get_function_token(current_inter.refrenced_name)->inputs)
+            {
+                current_variable
+            }
         }
         if (current_inter_id == WHILE_BEGIN) 
         { 
@@ -233,13 +236,41 @@ inline std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter
         if (current_inter_id == WHILE_END)
         {
             // This makes sure we have thing on the stack before the end of a while statment
-            if (rpn_stack.empty()) { std::cout << "Warning: something should be on the RPN stack before ending a while statment.\nContinuing...\n"; break; }
+            if (rpn_stack.empty()) { std::cout << "Warning: Something should be on the RPN stack before ending a while statment.\nContinuing...\n"; break; }
             if (!registers_used) { add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions); }
             add_asm(in_func, "CMP R0, #1\nBLE " + statment_stack.top().name + "\n", asm_file, asm_functions);
             statment_stack.pop();
         }
-        // Func calls
-        if (current_inter_id == FUNC_CALL) { }
+        // This handles loading all the values off the stack and calling functions
+        if (current_inter_id == FUNC_CALL) 
+        { 
+            function_token* current_function = get_function_token(current_inter.name);
+            if (!current_function) { std::cout << "Known function: " << current_inter.name << "\n"; exit(-1); }
+            if (current_function->inputs.size() > 2) { std::cout << "Error: The function " << current_inter.name << " takes more than two values which is not valid.\n"; exit(-1); }
+            for (variable_token current_variable : current_function->inputs)
+            {
+                // If the current thing on the stack can be transformed into the input type
+                if (!can_be_transformed_into(rpn_stack.top.type, current_variable.type))
+                {
+                    if (rpn_stack.empty()) { std::cout << "Expected something to be one the stack while calling function: " << current_inter.name << "\n"; exit(-1); }
+                    if (!registers_used) 
+                    { 
+                        add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions); 
+                        registers_used[0] = rpn_stack.top(); 
+                        rpn_stack.pop(); 
+                    }
+                    add_asm(in_func, value_into_asm(rpn_stack.top(), 1), asm_file, asm_functions);
+                    registers_used[1] = rpn_stack.top(); 
+                    rpn_stack.pop();
+                }
+                else 
+                {
+                    std::cout << "Cannot ";
+                    if (can_be_transformed_into(rpn_stack.type, current_variable.type) == 0) std::cout << "explicitly ";
+                    std::cout << "transform type " << id_into_string(rpn_stack.top.type) << " into " << id_into_string(inputs.type); }
+                }
+            }
+        }
     }
     asm_file.insert(asm_file.end(), asm_functions.begin(), asm_functions.end());
     return asm_file;

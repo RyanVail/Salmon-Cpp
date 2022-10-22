@@ -10,13 +10,12 @@
 #include<math.h> // TODO: math.h is just used for pow in var_types. Just rewrite it!
 #include<stack>
 
-// Definitions
-// TODO: Make these all caps
-#define Version 0.0 // The version of the Salmon compiler
-#define Debug 1 // If we are in debug mode
+// Definitions and stuff
+#define VERSION 0.0 // The version of the Salmon compiler
+#define DEBUG 1 // If we are in debug mode
+#define AARCH32_COMPILATION_TARGET 0
 unsigned char optimization_level = 0;
 unsigned char compilation_target = 0;
-#define AARCH32_COMPILATION_TARGET 0
 
 #include"tokenizer.cpp"
 #include"var_types.cpp"
@@ -40,7 +39,11 @@ std::vector<std::string> load_file(char file_name[])
 	while (true)
 	{
 		std::getline(file_handle, file_line);
-		if (file_line[0] == 0) { return file_contents; }
+		if (file_line == "") 
+		{ 
+			return file_contents;
+			if (!(file_contents.size())) { std::cout << "Something went wrong while reading the file.\n"; exit(-1); } // TODO: Replace this, it's just terrible
+		}
 		file_contents.push_back(file_line);
 	}
 }
@@ -49,12 +52,13 @@ std::vector<std::string> load_file(char file_name[])
 int main(int argc, char *argv[])
 {
 	// TODO: Add compile arguments
-	std::cout << "Compiling file " << argv[1] << " with V" << Version << "...\n\n";
+	if (!argv[1]) { std::cout << "Please enter a file name to compile.\n"; exit(-1); };
+	std::cout << "Compiling file " << argv[1] << " with V" << VERSION << "...\n\n";
 	std::vector<std::string> file_contents = load_file(argv[1]);
 	file_contents = blanker(file_contents);
 
 	std::vector<inter> inter_file = file_into_inter(file_contents);
-	#if Debug
+	#if DEBUG
 		std::cout << "\n\n";
 		print_symbol_table();
 	#endif

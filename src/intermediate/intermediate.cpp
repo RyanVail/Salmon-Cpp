@@ -167,7 +167,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 			if(get_function_token(name)) { std::cout << "The function name: " << name << " is already used.\n"; exit(-1); }
 			if(!is_valid_name(name)) { std::cout << "The function name: " << name << " isn't valid.\n"; exit(-1); }
 			add_function_token(name);
-			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 16;
+			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
 			// This reads through the input variables of the function
 			unsigned char current_type = 0; // The type of the current variable
 			int stack_space_needed = 0; // The stack space needed for all the input variables to the function
@@ -180,7 +180,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 				if (token == ")") { break; }
 				// TODO: Add default varaible assignment
 				if (token == "=") { std::cout << "Variable default assignemt has not been added yet.\n"; exit(-1); }
-				if (current_type) 
+				if (current_type) _
 				{
 					// This checks if there is another variable with the same name
 					// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner

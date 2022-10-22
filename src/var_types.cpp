@@ -16,6 +16,15 @@ const std::vector<std::string> invalid_names = { "if", "while", "else", "continu
 // const int types_size[] = { 0, 4, 2, 1, 4, 2, 1 }; // The size in bytes each type takes up
 // #define TYPES_SIZE 7
 
+
+// This takes in the two types and says how they can be transformed
+// 0 -> can be transformed 1 -> cannot be transformed without explicit transform 2-> can't be at all
+unsigned char can_be_transformed_into(type0, type1)
+{
+	// TODO: Add some logic
+	return 0;
+}
+
 // This checks if the given string is a valid name
 bool is_valid_name(std::string name)
 {

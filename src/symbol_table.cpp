@@ -18,14 +18,14 @@ struct symbols
 	int stack_space_needed; // The amount of stack space needed for static variables
 };
 
-struct variable_token
+struct variable_token // TODO: Variables need to be able to change type during compilation and we should be able to track scope
 {
 	std::string name;
 	int id;
 	unsigned char type = 0;
 	int owner = -1; // -1 means global variable 0 < means it's the id of a function
-	// TODO: These should have an owner so we know if it's in scope or not
 	int stack_location; // The negative location on the stack from the current point
+	variable_token(_name, _type, _owner, _stack_location) : name(_name), type(_type), owner(_owner), stack_location(_stack_location) {};
 };
 
 struct function_token
@@ -35,6 +35,7 @@ struct function_token
 	std::vector<variable_token> inputs; // This is a vector of the variables the function takes as an input
 	unsigned char output; // This is the output type
 	int stack_space_needed = 0; // The amount of bytes needed of stack space
+	variable_token new_token = variable_token(name, type, owner, stack_location);
 };
 
 // The static symbol table
@@ -99,12 +100,7 @@ void add_variable_token(std::string name, unsigned char type, int owner, int sta
 {
 	// This should make sure it is a valid variable name
 	if (get_variable_token(name) != 0) { std::cout << "The variable name: " << name << " is already used."; exit(-1); }
-	// TODO: Replace this with the fancy new way of declaring a struct
-	variable_token new_token;
-	new_token.name = name;
-	new_token.type = type;
-	new_token.owner = owner;
-	new_token.stack_location = stack_location;
+	variable_token new_token = variable_token(name, type, owner, stack_location);
 	symbol_table.variables.push_back(new_token);
 }
 // This adds a function to the list of functions based on name, returns, and inputs
@@ -112,7 +108,6 @@ void add_function_token(std::string name)
 {
 	// This should make sure it is a valid token name
 	if (get_function_token(name) != 0) { std::cout << "The function name: " << name << " is already used."; exit(-1); }
-	// TODO: Replace this with the fancy new way of declaring a struct
 	function_token new_function;
 	new_function.name = name;
 	// This sets the id to one more than the last function in symbol_table
