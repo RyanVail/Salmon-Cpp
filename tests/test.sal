@@ -1,0 +1,32 @@
+/*
+    Comment removal should be in tokenizer not intermediate
+    Stack should be at a size of one before a while statment
+    Comments should be allowed to be inside each other WITHOUT RECURSION
+*/
+u32 a 3 =
+5 3 + if
+{
+    2 34 + ;
+}
+1 if
+{
+    2 ++ ;
+}
+2 while
+{
+    a
+}
+/*
+fn main(u32 fizz)
+{
+    fizz ++ ;
+}
+*/
+/*
+3n-1 
+u32 a 7 = while { a 1 & if { a 1 a 3 * + = } a 1 & ! if { a a 2 * = } a 1 != }
+*/
+/*
+fib
+u32 a 1 = u32 b 1 = u32 c 1 = while { c a = a a b + = b c = a }
+*/

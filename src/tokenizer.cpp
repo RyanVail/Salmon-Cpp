@@ -1,18 +1,19 @@
-/*
-This file handles tokenizing a file making further processing a simplier job - Ryan Vail 2022 Sep. 8th
-*/
+/* This file handles tokenizing a file making further processing a simplier job */
 
 // TODO: Some special characters shouldn't add spaces based on the new RPN system
 
 #pragma once
 
+#include<vector>
+#include<string>
+
 #define blank_characters_len 4
-const char blank_characters[] = { 9, 10, 13, 32 };
-#define special_characters_len 15
+const char blank_characters[] = { '\n', '\r', '\t', ' ' };
+#define special_characters_len 16
 // TODO: The length's don't need to be constants
 // Old special chars
 // const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
-const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@' };
+const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@', '#' };
 
 // Returns true if a character is a blank otherwise false
 bool is_blank(char &character)
@@ -40,7 +41,8 @@ bool is_special(char &character)
 	return false;
 }
 
-// This replaces multiple blank characters with 0 in ASCII and should be the only public function
+// This seperates the file into tokens 
+// TODO: This should be named "file_into_tokens"
 std::vector<std::string> blanker(std::vector<std::string> &file_contents)
 {
 	std::vector<std::string> formated_file;
@@ -48,18 +50,15 @@ std::vector<std::string> blanker(std::vector<std::string> &file_contents)
 	for (std::vector<std::string>::iterator file_itr = file_contents.begin(); file_itr != file_contents.end(); file_itr++)
 	{
 		std::string current_string = *file_itr;
-		std::string formated_string;
+		std::string formated_string = "";
 		for (std::string::iterator str_itr = current_string.begin(); str_itr != current_string.end(); str_itr++)
 		{
-			// The above code just loops through every character in every string
 			if (is_blank(*str_itr))
 			{
-				// If this is the first blank add an ASCII 0
 				if (!last_blank)
 				{
-					formated_file.push_back(formated_string);
+					if (formated_string.size()) { formated_file.push_back(formated_string); }
 					formated_string = "";
-					// formated_file.push_back(0);
 					last_blank = true;
 				}
 				continue;
@@ -68,19 +67,19 @@ std::vector<std::string> blanker(std::vector<std::string> &file_contents)
 			{
 				if (!last_blank)
 				{
-					formated_file.push_back(formated_string);
+					if (formated_string.size()) { formated_file.push_back(formated_string); }
 					formated_string = "";
 				}
 				formated_string.push_back(*str_itr);
-				formated_file.push_back(formated_string);
+				if (formated_string.size()) { formated_file.push_back(formated_string); }
 				formated_string = "";
-				//formated_file.push_back(0);
 				last_blank = true;
 				continue;
 			}
 			formated_string.push_back(*str_itr);
 			last_blank = false;
 		}
+		if (formated_string.size()) { formated_file.push_back(formated_string); }
 	}
 	return formated_file;
 }

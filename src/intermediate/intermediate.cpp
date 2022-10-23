@@ -1,25 +1,20 @@
-/* This file turns tokens into their intermiedate form and does a few optimization passes along the way -Ryan Vail Sep. 4th 2022 */
+/* This file turns tokens into their intermiedate forms */
 
-#pragma once
-
+#include<intermediate/intermediate.hpp>
 #include<vector>
 #include<iostream>
 #include<stack>
-#include"../symbol_table.cpp"
-#include"../var_types.cpp"
-#include"../main.cpp"
-#include"preprocessor.cpp"
-#include"intermediate.hpp"
-
-#if Debug
-	void print_inter(inter to_print);
-#endif
+#include<string>
+#include<var_types.hpp>
+#include<symbol_table.hpp>
+#include<main.hpp>
+#include<intermediate/preprocessor.hpp>
+#include<debug.hpp>
 
 // TODO: We don't need to be returning the intermediate anymore since we are passing a refrence to the outputed intermediate
 // This turns a single set of select tokens into their intermediate form
 inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_output, int rpn_size, int current_owner, int &current_stack)
 {
-	std::cout << "asdf: "<< *itr << "\n";
 	if (*itr == "!") { return inter(NOT, 0, ""); }
 	if (*itr == "@") { return inter(GET, 0, ""); }
 	if (*itr == "%") { return inter(MEM_ADDRS, 0, ""); }
@@ -54,7 +49,7 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 			if (rpn_size) { std::cout << "There must be nothing on the RPN stack to define a variable.\n"; exit(-1); }
 			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
 			add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
-			return inter(VARIABLE_DECLERATION, 0, *itr);
+			return inter(VARIABLE_DECLERATION, 0, *itr, get_variable_token(*itr));
 		}
 		// We check if the variable is in the symbol table, if not we send an error
 		if (!get_variable_token(*itr)) { std::cout << "Unknown variable: " << *itr << ".\n"; exit(-1); }
@@ -85,13 +80,12 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 	{
 		if (rpn_size < 0) { std::cout << "RPN stack size fell below zero.\n"; exit(-1); }
 		// These till const are called when we are doing "preproccesing"
-		preprocessor::try_to_pass_comments(file, itr);
 		if (*itr == "#")
 		{
-			std::cout << *(itr+1) << "\n"; exit(0);
-			preprocessor::process_instruction(file, &(*itr), inter_output);
-			std::cout << *itr << "\n"; exit(-1);
+			preprocessor::process_instruction(file, itr, inter_output);
+			continue;
 		}
+		if (preprocessor::try_to_pass_comments(file, itr)) { continue; }
 		// If we have a constant
 		if (is_str_num(*itr))
 		{
@@ -112,6 +106,8 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		// If we hit a '}'
 		if (*itr == "}")
 		{
+			if (rpn_size && statment_stack.top().id != WHILE_END) { std::cout << "RPN stack size should be zero before ending a statment.\n"; exit(-1); }
+			if (rpn_size >= 2) { std::cout << "Only one thing is allowed the be on the RPN stack while ending a while statment.\n"; exit(-1); }
 			if (statment_stack.empty()) { std::cout << "Unexpected '}'.\n"; exit(-1); }
 			inter_output.push_back(statment_stack.top());
 			statment_stack.pop();
@@ -151,7 +147,8 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		{
 			inter_output.push_back(inter(WHILE_BEGIN, 0, ""));
 			statment_stack.push(inter(WHILE_END, 0, ""));
-			if (*(itr+1) != "{") { std::cout << "Expected '{' after an if statment.\n"; exit(-1); }
+			itr++;
+			if (*(itr) != "{") { std::cout << "Expected '{' after a while statment.\n"; exit(-1); }
 			rpn_size--;
 			continue;
 		}
@@ -180,7 +177,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 				if (token == ")") { break; }
 				// TODO: Add default varaible assignment
 				if (token == "=") { std::cout << "Variable default assignemt has not been added yet.\n"; exit(-1); }
-				if (current_type) _
+				if (current_type)
 				{
 					// This checks if there is another variable with the same name
 					// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner
@@ -211,9 +208,9 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 	// Makes sure the statment stack is done
 	if (statment_stack.size()) { std::cout << "Expected all statments to be closed before the end of the file.\n"; exit(-1); }
 	// Prints all intermediates if we are in debug mode
-	#if Debug
+	#if DEBUG
 		for (std::vector<inter>::iterator itr = inter_output.begin(); itr != inter_output.end(); itr++) { print_inter(*itr); }
 	#endif
-	symbol_table.stack_space_needed = current_stack;
+	calc_function_stack_size();
 	return inter_output;
 }

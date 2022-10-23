@@ -1,2 +1,0 @@
-The goal of this whole language is to be a sorta esoteric, ARM, and RPN language that could or will be written in itself. 
-At the moment though it feels like a abstraction and macro system above ASM.

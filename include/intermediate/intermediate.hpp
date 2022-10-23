@@ -1,5 +1,9 @@
-#pragma once
-#include"../symbol_table.cpp"
+#ifndef INTERMEDIATE_INTERMEDIATE_HPP
+#define INTERMEDIATE_INTERMEDIATE_HPP
+
+#include<vector>
+#include<string>
+#include<symbol_table.hpp>
 
 struct inter
 {
@@ -35,7 +39,7 @@ struct inter
 #define ADD 20				// '+'
 #define	SUB 21				// '-'
 #define DIV 22				// '/'
-#define MUL 23				// '*'
+#define MUL 23		
 #define FUNC_BEGIN 24
 #define FUNC_END 25
 #define FUNC_CALL 26		// '$'
@@ -52,3 +56,7 @@ struct inter
 #define BREAK 37
 #define RETURN 38
 #define ASM 39
+
+std::vector<inter> file_into_inter(std::vector<std::string> &file);
+
+#endif

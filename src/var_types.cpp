@@ -1,12 +1,12 @@
-/* 
-	This file handles turning string based variable types into their corrisponding id - Ryan Vail 2022 Sep. 9th 
-*/
+/* This file handles turning string based variable types into their corrisponding id */
 
-#pragma once
+#include<var_types.hpp>
+#include<string>
+#include<vector>
+#include<math.h> // This is just used for pow it might be better to rewrite it
 
 // 0 is null type
 const std::vector<std::string> types = { "", "u32", "i32" };
-const int types_size[] = { 0, 4, 4 };
 #define TYPES_SIZE 3
 const std::vector<std::string> invalid_names = { "if", "while", "else", "continue", "break", "return" };
 #define INVALID_NAMES_SIZE 6
@@ -19,7 +19,7 @@ const std::vector<std::string> invalid_names = { "if", "while", "else", "continu
 
 // This takes in the two types and says how they can be transformed
 // 0 -> can be transformed 1 -> cannot be transformed without explicit transform 2-> can't be at all
-unsigned char can_be_transformed_into(type0, type1)
+unsigned char can_be_transformed_into(unsigned char type0, unsigned char type1)
 {
 	// TODO: Add some logic
 	return 0;
@@ -108,3 +108,6 @@ bool is_str_letters(std::string &test_string)
 	}
 	return true;
 }
+
+#undef INVALID_NAMES_SIZE
+#undef TYPES_SIZE
