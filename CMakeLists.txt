@@ -15,6 +15,6 @@ add_executable(Salmon
 	src/var_types.cpp
 	src/intermediate/intermediate.cpp
 	src/main.cpp
-	src/intermediate/preprocessor.cpp
+	src/intermediate/postprocessor.cpp
 	src/asm/aarch32_asm.cpp
 ) # ^^^^^^^^^^^^^^^^^^^^^^^ These should change based on the compilation target

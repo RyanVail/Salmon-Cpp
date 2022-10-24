@@ -5,9 +5,10 @@
 #include<string>
 #include<symbol_table.hpp>
 
+// This struct defines a single intermediate instruction
 struct inter
 {
-	int id; // This is the id of the intermediate token
+	int id; // This is the id/type of the intermediate token
 	int value; // This is a value or variable type id
 	std::string refrenced_name; // This is the name of the function or variable that is refrenced
 	variable_token* refrenced_variable_token; // The refrenced variable token if there is one
@@ -16,6 +17,7 @@ struct inter
 };
 
 // The below comments were made with a tab size of four
+// These are the intermediate instructions types/ids
 #define VARIABLE_TYPE 0
 #define VARIABLE_DECLERATION 1
 #define VARIABLE_REASIGNMENT 2 // TODO: This is currently not used since it is done during the transfer to ASM but once opt. is added it will be needed
@@ -57,6 +59,7 @@ struct inter
 #define RETURN 38
 #define ASM 39
 
+// This takes in the tokenized file and returns the intermediate representation of the file
 std::vector<inter> file_into_inter(std::vector<std::string> &file);
 
 #endif

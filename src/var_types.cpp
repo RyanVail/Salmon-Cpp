@@ -100,6 +100,7 @@ bool is_str_num(std::string &possible_number)
 }
 
 // This returns the int of a string of numbers
+// TODO: Check if "stoi" can do this
 int get_str_num(std::string &possible_number)
 {
 	int value = 0;
@@ -111,11 +112,12 @@ int get_str_num(std::string &possible_number)
 }
 
 // Checks if a string is just letters
-bool is_str_letters(std::string &test_string)
+bool is_str_letters(std::string &string_to_test)
 {
-	for (std::string::iterator itr = test_string.begin(); itr != test_string.end(); itr++)
+	for (char current_char : string_to_test)
 	{
-		if (((*itr > 122 || *itr < 97) && (*itr > 90 || *itr < 65)) || *itr == '_') // If upercase and lowercase or '_'
+		// This sends an error if the current char isn't upercase, lowercase, or '_'
+		if (((current_char > 122 || current_char < 97) && (current_char > 90 || current_char < 65)) || current_char != '_')
 		{
 			return false;
 		}

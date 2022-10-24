@@ -18,6 +18,7 @@ const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|',
 // Returns true if a character is a blank otherwise false
 bool is_blank(char &character)
 {
+	// TODO: Find out if GCC unravels this at O3
 	for (int current_blank=0; current_blank < blank_characters_len; current_blank++)
 	{
 		if (blank_characters[current_blank] == character)
@@ -42,43 +43,56 @@ bool is_special(char &character)
 }
 
 // This seperates the file into tokens 
-// TODO: This should be named "file_into_tokens"
-std::vector<std::string> blanker(std::vector<std::string> &file_contents)
+std::vector<std::string> file_into_tokens(std::vector<std::string> &file_contents)
 {
-	std::vector<std::string> formated_file;
-	bool last_blank = true; // This is set to true so if the first character is a blank it doesn't get added
-	for (std::vector<std::string>::iterator file_itr = file_contents.begin(); file_itr != file_contents.end(); file_itr++)
+	std::vector<std::string> formated_file; // Each string is another token
+	int comments = 0; // The # of comments we are insde if any
+	char last_char; // The last char we had
+	// This goes over every string in the file
+	for (std::string current_string : file_contents)
 	{
-		std::string current_string = *file_itr;
 		std::string formated_string = "";
-		for (std::string::iterator str_itr = current_string.begin(); str_itr != current_string.end(); str_itr++)
+		// This goes over every char in the string
+		for (char current_char : current_string)
 		{
-			if (is_blank(*str_itr))
+			// If we are starting a comment we incrament "comments"
+			if (current_char == '*' && last_char == '/') { comments++; }
+
+			// If we are ending a comment we decrament "comments"
+			if (current_char == '/' && last_char == '*') { comments--; }
+
+			// If we are in a comment we just repeat the loop while setting "last_char" to the current char
+			if (comments) { last_char = current_char; continue; }
+
+			// If the current char is blank
+			if (is_blank(current_char))
 			{
-				if (!last_blank)
-				{
-					if (formated_string.size()) { formated_file.push_back(formated_string); }
+				// If there is something in the formated string add it to the formated file
+				if (formated_string.size()) 
+				{ 
+					formated_file.push_back(formated_string); 
 					formated_string = "";
-					last_blank = true;
 				}
 				continue;
 			}
-			if (is_special(*str_itr))
+			// If the current char is special
+			if (is_special(current_char))
 			{
-				if (!last_blank)
-				{
-					if (formated_string.size()) { formated_file.push_back(formated_string); }
+				// If there are things in the formated string we add it to the formated file
+				if (formated_string.size()) 
+				{ 
+					formated_file.push_back(formated_string); 
 					formated_string = "";
 				}
-				formated_string.push_back(*str_itr);
-				if (formated_string.size()) { formated_file.push_back(formated_string); }
-				formated_string = "";
-				last_blank = true;
+				// We add the special char to the formated file in its own token
+				formated_string = ""; 
+				formated_file.push_back(std::string(current_char));
 				continue;
 			}
-			formated_string.push_back(*str_itr);
-			last_blank = false;
+			// We add the current char which by now is just a normal char
+			formated_string.push_back(current_char);
 		}
+		// If we have left overs in formated string
 		if (formated_string.size()) { formated_file.push_back(formated_string); }
 	}
 	return formated_file;

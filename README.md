@@ -90,6 +90,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
 # Problems and TODOs
 - ## General
     - ### **TYPES ARE JUST NOT USED LIKE AT ALL!**
+    - ### There is no support for signed types
     - ### Add namespaces to all files so as to not clutter up the global space
     - ### Add some tests that are run automatically and are scored automatically
     - ### Make it so "main.cpp" stops reading a file when it gets zero bytes

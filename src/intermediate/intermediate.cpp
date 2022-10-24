@@ -79,13 +79,12 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
 		if (rpn_size < 0) { std::cout << "RPN stack size fell below zero.\n"; exit(-1); }
-		// These till const are called when we are doing "preproccesing"
+		// If we are doing postprocessing
 		if (*itr == "#")
 		{
 			postprocessor::process_instruction(file, itr, inter_output);
 			continue;
 		}
-		if (preprocessor::try_to_pass_comments(file, itr)) { continue; }
 		// If we have a constant
 		if (is_str_num(*itr))
 		{

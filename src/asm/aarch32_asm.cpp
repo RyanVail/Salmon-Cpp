@@ -68,7 +68,7 @@ void add_asm(bool in_func, std::string asm_to_add, std::vector<std::string> &asm
 std::string value_into_asm(value_defintion &current_def, int _register)
 {
     // If we are defining a const
-    if (current_def.accessed_variable == 0 && current_def.called_function == 0)
+    if (current_def.accessed_variable == nullptr && current_def.called_function == nullptr)
     {
         // TODO: This should make sure the const is a valid const in arm asm
         return "MOV R" +
@@ -103,7 +103,6 @@ void single_intermediate_into_asm(inter current_inter, std::stack<value_defintio
         add_asm(in_func, current_inter.refrenced_name, asm_file, asm_functions);
     }
     bool was_for_one = false; // Hopefully this saves a bit of time
-    // TODO: This things under here should make sure the type on the rpn stack is the same as their type
     if (current_inter_id >= NOT && current_inter_id <= DECRAMENT) 
     {
         // If R0 isn't used
@@ -115,14 +114,24 @@ void single_intermediate_into_asm(inter current_inter, std::stack<value_defintio
         }
         was_for_one = true;
     }
-    //if (is_norma(rpn_stack) && was_for_one)
+    // If we are doing a single computation on a byte type
+    //if (is_char(rpn_stack))
+    if (0)
+    {
+        if (current_inter_id == GET) { add_asm(in_func, GET_ASM_CHAR, asm_file, asm_functions); }
+    }
+    //if (is_normal(rpn_stack) && was_for_one)
     if (1 && was_for_one)
     {
         if (current_inter_id == NOT) { add_asm(in_func, NOT_ASM_INT, asm_file, asm_functions); }
         if (current_inter_id == GET) { add_asm(in_func, GET_ASM_NORMAL, asm_file, asm_functions); }
         if (current_inter_id == MEM_ADDRS)
         {
-            // This needs more than the others 
+            // TODO: This only works for variable that are on the stack
+            add_asm(in_func, 
+                        "ADD R0,SP,#" +
+                        get_variable_token(current_inter.refrenced_name)->stack_location
+                    , asm_file, asm_functions);
         }
         if (current_inter_id == INCRAMENT) { add_asm(in_func, INCRAMENT_ASM_NORMAL, asm_file, asm_functions); }
         if (current_inter_id == DECRAMENT) { add_asm(in_func, DECRAMENT_ASM_NORMAL, asm_file, asm_functions); }

@@ -23,7 +23,7 @@ fn main(u32 fizz)
 }
 */
 /*
-3n-1 
+3n-1
 u32 a 7 = while { a 1 & if { a 1 a 3 * + = } a 1 & ! if { a a 2 * = } a 1 != }
 */
 /*

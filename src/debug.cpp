@@ -7,7 +7,7 @@
 
 const std::string INTERS[] = { "VARIABLE_TYPE", "VARIABLE_DECLERATION", "VARIABLE_REASIGNMENT", "VARIABLE_ACCESS", "NOT", "GET", "MEM_ADDRS", "INCRAMENT", "DECRAMENT", "AND", "OR", "XOR", "LSL", "LSR", "EQUAL", "IS_EQUAL", "LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL", "ADD", "SUB", "DIV", "MUL", "FUNC_BEGIN", "FUNC_END", "FUNC_CALL", "IF_BEGIN", "IF_END", "VARIABLE_NAME", "RESET_RPN", "CONST", "WHILE_BEGIN", "WHILE_END", "ELSE_BEGIN", "ELSE_END", "CONTINUE", "BREAK", "RETURN", "ASM" };
 
-// This takes in a intermediate id and prints the id
+// This takes in a intermediate id and prints out its data
 void print_inter(inter to_print)
 {
 	std::cout << INTERS[to_print.id];

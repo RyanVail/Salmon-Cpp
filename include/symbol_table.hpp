@@ -12,6 +12,7 @@ struct symbols;
 struct variable_token;
 struct function_token;
 
+// This is going to be used once by a static symbol table
 struct symbols
 {
 	std::vector<variable_token> variables;
