@@ -72,12 +72,8 @@ int main(int argc, char *argv[])
 	}
 	if (file_name == "") { std::cout << "Please enter a file name to compile or use -h to display help.\n"; exit(-1); };
 	std::cout << "Compiling file " << file_name << " with " << VERSION << "...\n\n";
-	std::vector<std::string> file_contents = load_file(argv[1]);
-	file_contents = blanker(file_contents);
-
-	// TODO: file_contents is just taking up memory here same with inter_file after output_asm is made
-
-	std::vector<inter> inter_file = file_into_inter(file_contents);
+	
+	std::vector<inter> inter_file = file_into_inter(blanker(load_file(argv[1])));
 
 	#if DEBUG
 		std::cout << "\n\n";
