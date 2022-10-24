@@ -6,6 +6,7 @@
 #include<intermediate/intermediate.hpp>
 namespace aarch32_asm 
 {
+    // TODO: This should contain the structs that are used by "aarch32_asm.cpp"
     std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file);
 }
 

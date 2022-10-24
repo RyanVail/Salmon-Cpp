@@ -38,17 +38,13 @@ namespace aarch32_asm {
 #define LSL_ASM_NORMAL "LSL R0, R1"
 #define LSR_ASM_NORMAL "LSR R0, R1"
 #define RESET_RPN_ASM_NORMAL "MOV R0, #0\nMOV R1, R0"
-// Operate on an unknown amount of registers and or stack
-// Function calls // Function calls also need to reset registers
 
-// This struct should be able to be turned into asm just based on it
-// Also we should be able to get the type of it easily
 struct value_defintion
 {
     int const_value; // The value of this function if it's const
     variable_token* accessed_variable = 0; // If we are accessing a variable a pointer to it
     function_token* called_function = 0; // If we are calling a function a pointer to it
-    unsigned char final_type = 255; // The type this operation would result in
+    unsigned char final_type = 0; // The type this operation would result in
     value_defintion(int _const_value, variable_token *_accessed_variable, function_token *_called_function, unsigned char _final_type) : const_value(_const_value), accessed_variable(_accessed_variable), called_function(_called_function), final_type(_final_type) {};
 };
 
@@ -59,14 +55,7 @@ struct statment_defintion
     statment_defintion(unsigned char _type, std::string _name) : type(_type), name(_name) {};
 };
 
-value_defintion registers_used[2] = { value_defintion(0, 0, 0, 0), value_defintion(0, 0, 0, 0) }; // This is terrible
-
-// This checks if a type is normal
-bool is_normal(unsigned char type)
-{
-    if (type) { return true; } // TODO: When adding more types this needs to be changed to be correct
-    return false;
-};
+value_defintion value_in_r0 = value_defintion(0, 0, 0, 0);
 
 // This either adds asm to "asm_file" or the top function in "asm_functions" based on "in_func"
 void add_asm(bool in_func, std::string asm_to_add, std::vector<std::string> &asm_file, std::vector<std::string> &asm_functions)
@@ -82,11 +71,10 @@ std::string value_into_asm(value_defintion &current_def, int _register)
     if (current_def.accessed_variable == 0 && current_def.called_function == 0)
     {
         // TODO: This should make sure the const is a valid const in arm asm
-        // TODO: Find a better way of making the red squigglies go away on the line below
         return "MOV R" +
                 std::to_string(_register) +
                 ", #" +
-                std::to_string(*(&(current_def.const_value)));
+                std::to_string(*(&(current_def.const_value))); // TODO: Find a better way of making the red squigglies go away
     }
     // If we are accessing a variable
     if (current_def.accessed_variable != 0)
@@ -119,10 +107,10 @@ void single_intermediate_into_asm(inter current_inter, std::stack<value_defintio
     if (current_inter_id >= NOT && current_inter_id <= DECRAMENT) 
     {
         // If R0 isn't used
-        if (!registers_used[0].final_type) 
+        if (!value_in_r0.final_type) 
         { 
             add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
-            registers_used[0] = rpn_stack.top();
+            value_in_r0 = rpn_stack.top();
             rpn_stack.pop();
         }
         was_for_one = true;
@@ -140,30 +128,47 @@ void single_intermediate_into_asm(inter current_inter, std::stack<value_defintio
         if (current_inter_id == DECRAMENT) { add_asm(in_func, DECRAMENT_ASM_NORMAL, asm_file, asm_functions); }
         return;
     }
-    // NOT -> DECRAMENT			operate on one and leave one
-    // AND -> MUL				operate on two and leave one
-    // FUNC_CALL				operates on an unknown amount and leaves one. Both an operator and a value
     if (current_inter_id == EQUAL)
     {
-        if (registers_used[0].final_type) { std::cout << "Stack size should be zero while settings a variable value.\n"; }
-        add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
+        // If there is nothing in R0 we offload the stop value
+        if (!value_in_r0.final_type) 
+        {
+            add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
+            rpn_stack.pop();
+        }
+        // If the variable is 32 bit
+        if (is_normal(rpn_stack.final_type))
+        {
+            add_asm(in_func, 
+                        "STR R0, [SP,#" +
+                        std::to_string(rpn_stack.top()->stack_location+types_size[rpn_stack.top->final_type]) +
+                        "]"
+                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed)
+                    , asm_file, asm_functions);
+        }
+        // If variable is 8 bit
+        else if (is_char(rpn_stack.final_type))
+        {
+            add_asm(in_func, 
+                        "STRB R0, [SP,#" +
+                        std::to_string(rpn_stack.top()->stack_location+types_size[rpn_stack.top->final_type]) +
+                        "]"
+                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed)
+                    , asm_file, asm_functions);
+        }
+        else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }
         rpn_stack.pop();
-        add_asm(in_func,
-                    "STR R0, [SP,#" +
-                    std::to_string(rpn_stack.top().accessed_variable->stack_location+types_size[rpn_stack.top().accessed_variable->type]) +
-                    "]"
-                , asm_file, asm_functions);
-        rpn_stack.pop();
+        value_in_r0 = value_defintion(0, 0, 0, 0); // We set R0 to nothing
         return;
     }
     // Prepping for a comparision with two types
     if (current_inter_id >= AND && current_inter_id <= MUL) 
     {
         // If R0 isn't being used
-        if (!registers_used[0].final_type)
+        if (!value_in_r0.final_type)
         {
             add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
-            registers_used[0] = rpn_stack.top();
+            value_in_r0 = rpn_stack.top();
             rpn_stack.pop(); 
         }
         // We off load the next in the stack into R1
@@ -210,16 +215,17 @@ std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file)
         single_intermediate_into_asm(current_inter, rpn_stack, statment_stack, in_func, asm_functions, asm_file);
         if (current_inter_id == VARIABLE_DECLERATION)
         {
-            rpn_stack.push(value_defintion(1, current_inter.refrenced_variable_token, 0, 255));
+            // TODO: Make variable declerations work
+            rpn_stack.push(value_defintion(1, current_inter.refrenced_variable_token, 0, 0));
         }
-        if (current_inter_id == CONST) { rpn_stack.push(value_defintion(current_inter.value, 0, 0, 255)); }
+        if (current_inter_id == CONST) { rpn_stack.push(value_defintion(current_inter.value, 0, 0, 0)); }
         if (current_inter_id == VARIABLE_ACCESS) 
         {
             rpn_stack.push(value_defintion(0, current_inter.refrenced_variable_token, 0, 255));
         }
         if (current_inter_id == FUNC_BEGIN) 
         {
-            if (!statment_stack.empty()) { std::cout << "Functions can only be defined in the global scope.\n"; exit(-1); }
+            if (!statment_stack.empty() || in_func) { std::cout << "Functions can only be defined in the global scope.\n"; exit(-1); }
             if (!rpn_stack.empty()) { std::cout << "RPN stack should be empty before defining a function.\n"; exit(-1); }
             in_func = true;
             statment_stack.push(statment_defintion(0, "fn_" + current_inter.refrenced_name));
@@ -231,22 +237,47 @@ std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file)
                         "SUB SP, #" + 
                         std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed)
                     , asm_file, asm_functions);
+            int current_register = 0;
             for (variable_token current_variable : get_function_token(current_inter.refrenced_name)->inputs)
             {
-                std::cout << "Exiting\n"; exit(-1);
+                // If this is 32 bit
+                if (is_normal(current_variable))
+                {
+                    add_asm(in_func, 
+                                "STR R" +
+                                std::to_string(current_register);
+                                ", [SP,#" +
+                                std::to_string(current_variable->stack_location+types_size[current_variable->type]) +
+                                "]"
+                                std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed)
+                            , asm_file, asm_functions);
+                }
+                // If this is 8 bit
+                else if (is_char(current_variable))
+                {
+                    add_asm(in_func, 
+                                "STRB R" +
+                                std::to_string(current_register);
+                                ", [SP,#" +
+                                std::to_string(current_variable->stack_location+types_size[current_variable->type]) +
+                                "]"
+                                std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed)
+                            , asm_file, asm_functions);
+                }
+                else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }
             }
         }
         if (current_inter_id == WHILE_BEGIN)
         {
-            if (rpn_stack.empty() && !registers_used[0].final_type) { std::cout << "Warning: Something should be on the RPN stack before starting a while statment.\nContinuing...\n"; break; }
+            if (rpn_stack.empty() && !value_in_r0.final_type) { std::cout << "Warning: Something should be on the RPN stack before starting a while statment.\nContinuing...\n"; break; }
             else 
             {
-                if (!registers_used[0].final_type) // If R0 isn't being used already we off load the value on the stack into R0
+                if (!value_in_r0.final_type) // If R0 isn't being used already we off load the value on the stack into R0
                 {
                     add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
                     rpn_stack.pop();
                 }
-                registers_used[0] = { value_defintion(0, 0, 0, 0) };
+                value_in_r0 = value_defintion(0, 0, 0, 0);
             }
             statment_stack.push(statment_defintion(1, std::to_string(current_statment_id)));
             add_asm(in_func, 
@@ -259,15 +290,15 @@ std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file)
         }
         if (current_inter_id == IF_BEGIN)
         {
-            if (rpn_stack.empty() && !registers_used[0].final_type) { std::cout << "Warning: Something should be on the RPN stack before starting an if statment.\nContinuing...\n"; break; }
+            if (rpn_stack.empty() && !value_in_r0.final_type) { std::cout << "Warning: Something should be on the RPN stack before starting an if statment.\nContinuing...\n"; break; }
             else 
             {
-                if (!registers_used[0].final_type) // If R0 isn't being used already we off load the value on the stack into R0
+                if (!value_in_r0.final_type) // If R0 isn't being used already we off load the value on the stack into R0
                 {
                     add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
                     rpn_stack.pop();
                 }
-                registers_used[0] = { value_defintion(0, 0, 0, 0) };
+                value_in_r0 = value_defintion(0, 0, 0, 0);
             }
             add_asm(in_func,
                         "CMP R0, #0\nBLE if_" + 
@@ -281,7 +312,7 @@ std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file)
             rpn_stack = {};
             // TODO: This should scale based on the # of registers used
             add_asm(in_func, RESET_RPN_ASM_NORMAL, asm_file, asm_functions);
-            registers_used[0] = { value_defintion(0, 0, 0, 0) };
+            value_in_r0 = value_defintion(0, 0, 0, 0);
         }
         if (current_inter_id == IF_END)
         {
@@ -291,20 +322,24 @@ std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file)
         if (current_inter_id == WHILE_END)
         {
             // This makes sure we have thing on the stack before the end of a while statment
-            if (rpn_stack.empty() && !registers_used[0].final_type) { std::cout << "Warning: Something should be on the RPN stack before ending a while statment.\nContinuing...\n"; break; }
-            if (!registers_used[0].final_type) { add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions); }
+            if (rpn_stack.empty() && !value_in_r0.final_type) { std::cout << "Warning: Something should be on the RPN stack before ending a while statment.\nContinuing...\n"; break; }
+            if (!value_in_r0.final_type) { add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions); }
             add_asm(in_func, 
                         "B while_start_" + 
                         statment_stack.top().name + 
                         "\nwhile_end_" + 
                         statment_stack.top().name + 
                         ":"
-                        , asm_file, asm_functions);
+                    , asm_file, asm_functions);
             statment_stack.pop();
         }
         if (current_inter_id == FUNC_END)
         {
             // TODO: Add some more things like adding back SP
+            add_asm(in_func, 
+                        "BX LR"
+                    , asm_file, asm_functions);
+            statment_stack.pop();
             in_func = false;
         }
         // This handles loading all the values off the stack and calling functions
@@ -312,36 +347,53 @@ std::vector<std::string> intermediates_into_asm(std::vector<inter> &inter_file)
         { 
             function_token* current_function = get_function_token(current_inter.refrenced_name);
             if (!current_function) { std::cout << "Known function: " << current_inter.refrenced_name << "\n"; exit(-1); }
-            if (current_function->inputs.size() > 2) { std::cout << "Error: The function " << current_inter.refrenced_name << " takes more than two values which is not valid.\n"; exit(-1); }
+            if (current_function->inputs.size() > 8) { std::cout << "Error: The function " << current_inter.refrenced_name << " takes more than eight values which is not valid.\n"; exit(-1); }
+            int current_register = 0; // The current register we are offloading the inputs of the function into
+            // This offloads the needed values as input from the stack into the registers 
             for (variable_token current_variable : current_function->inputs)
             {
+                if (rpn_stack.empty() && !value_in_r0.final_type) { std::cout << "Expected something to be one the stack while calling function: " << current_inter.refrenced_name << "\n"; exit(-1); }
+                // If there is something in R0 right now
+                if (value_in_r0.final_type) 
+                {
+                    // If we can't transform R0 into the function input type
+                    if (can_be_transformed_into(value_in_r0.final_type, current_variable.type))
+                    {
+                        std::cout << "Cannot ";
+                        if (can_be_transformed_into(value_in_r0.final_type, current_variable.type) == 0) { std::cout << "explicitly "; }
+                        std::cout << "transform type " << id_into_string(rpn_stack.top().final_type) << " into " << id_into_string(current_variable.type);
+                        exit(-1);
+                    }
+                    current_register++;
+                    continue; // If we can transform the value in R0 into the input type we just continue and incrament "current_register"
+                }
                 // If the current thing on the stack can be transformed into the input type
                 if (!can_be_transformed_into(rpn_stack.top().final_type, current_variable.type))
                 {
-                    if (rpn_stack.empty()) { std::cout << "Expected something to be one the stack while calling function: " << current_inter.refrenced_name << "\n"; exit(-1); }
-                    if (!registers_used[0].final_type) 
-                    { 
-                        add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions); 
-                        registers_used[0] = rpn_stack.top(); 
-                        rpn_stack.pop(); 
-                    }
-                    add_asm(in_func, value_into_asm(rpn_stack.top(), 1), asm_file, asm_functions);
-                    registers_used[1] = rpn_stack.top(); 
+                    add_asm(in_func, value_into_asm(rpn_stack.top(), current_register), asm_file, asm_functions);
                     rpn_stack.pop();
+                    current_register++;
                 }
                 else 
                 {
                     std::cout << "Cannot ";
-                    if (can_be_transformed_into(rpn_stack.top().final_type, current_variable.type) == 0) std::cout << "explicitly ";
-                    std::cout << "transform type " << id_into_string(rpn_stack.top().final_type) << " into " << id_into_string(current_variable.type); }
+                    if (can_be_transformed_into(rpn_stack.top().final_type, current_variable.type) == 0) { std::cout << "explicitly "; }
+                    std::cout << "transform type " << id_into_string(rpn_stack.top().final_type) << " into " << id_into_string(current_variable.type);
+                    exit(-1);
                 }
             }
+            // This actually calls the function
+            add_asm(in_func,
+                        "BL " +
+                        "func_" +
+                        current_inter.refrenced_name;
+                    , asm_file, asm_functions);
         }
+    }
+    // This puts "asm_file" and "asm_functions" together
     asm_file.insert(asm_file.end(), asm_functions.begin(), asm_functions.end());
     return asm_file;
-    }
 }
-// Undefs
 #undef RETURN_ASM_NORMAL
 #undef NOT_ASM_BOOL
 #undef NOT_ASM_INT

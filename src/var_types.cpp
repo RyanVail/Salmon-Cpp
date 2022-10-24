@@ -17,6 +17,20 @@ const std::vector<std::string> invalid_names = { "if", "while", "else", "continu
 // #define TYPES_SIZE 7
 
 
+// This checks if a type is normal IE. 32 bit
+bool is_normal(unsigned char type)
+{
+    if (type) { return true; }
+    return false;
+};
+
+// This checks if a type is a char IE. 8 bit
+bool is_char(unsigned char type)
+{
+	if (type) { return true; }
+	return false;
+}
+
 // This takes in the two types and says how they can be transformed
 // 0 -> can be transformed 1 -> cannot be transformed without explicit transform 2-> can't be at all
 unsigned char can_be_transformed_into(unsigned char type0, unsigned char type1)

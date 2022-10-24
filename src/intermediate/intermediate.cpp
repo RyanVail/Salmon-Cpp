@@ -8,7 +8,7 @@
 #include<var_types.hpp>
 #include<symbol_table.hpp>
 #include<main.hpp>
-#include<intermediate/preprocessor.hpp>
+#include<intermediate/postprocessor.hpp>
 #include<debug.hpp>
 
 // TODO: We don't need to be returning the intermediate anymore since we are passing a refrence to the outputed intermediate
@@ -82,7 +82,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		// These till const are called when we are doing "preproccesing"
 		if (*itr == "#")
 		{
-			preprocessor::process_instruction(file, itr, inter_output);
+			postprocessor::process_instruction(file, itr, inter_output);
 			continue;
 		}
 		if (preprocessor::try_to_pass_comments(file, itr)) { continue; }

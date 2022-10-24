@@ -17,4 +17,4 @@ add_executable(Salmon
 	src/main.cpp
 	src/intermediate/preprocessor.cpp
 	src/asm/aarch32_asm.cpp
-)
+) # ^^^^^^^^^^^^^^^^^^^^^^^ These should change based on the compilation target

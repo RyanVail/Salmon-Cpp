@@ -13,11 +13,11 @@ This is a compiler for an esoteric-like programming language that is proably goi
     - [The Fibonacci Sequence](#the-fibonacci-sequence)
     - [3n-1](#3n-1)
 - [Quirks](#quirks)
-- [Problems]()
+- [Problems and TODOs](#problems-and-todos)
 
 # Concepts
 
-- ### Reverse Polish Notation ([RPN]((https://en.wikipedia.org/wiki/Reverse_Polish_notation)))
+- ### [Reverse Polish Notation (RPN)](https://en.wikipedia.org/wiki/Reverse_Polish_notation)
     - RPN is a mathematical notation in which operators follow their operands
     - Infix Notation (normal notation):
         ```
@@ -37,7 +37,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
         ```
         u32 a 3 =
         u32 b 1 =
-        1 2 +
+        1 2 + ;
         a a b + =
         ```
 
@@ -87,8 +87,9 @@ This is a compiler for an esoteric-like programming language that is proably goi
 
 # Quirks
 
-# Problems
+# Problems and TODOs
 - ## General
+    - ### **TYPES ARE JUST NOT USED LIKE AT ALL!**
     - ### Add namespaces to all files so as to not clutter up the global space
     - ### Add some tests that are run automatically and are scored automatically
     - ### Make it so "main.cpp" stops reading a file when it gets zero bytes
@@ -101,6 +102,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
     - ### Function defintions and function calls just don't work right now
     - ### Functions should keep the value they get as input (if it is one value) in R0 rather than offloading it to the stack
 - ## Intermediate
+    - ### Intermediate codes should use an enum for intermediate codes to make the code a little cleaner
     - ### Intermediate should use a stack to represent values like "aarch32_asm.cpp" does now
         - #### Add a way of adding psuedo break points that are done in intermediate.cpp that stop compiling the program and print the # of things on the stack and what is one the stack
         - #### A lot of things involving stacks can be removed from "aarch32_asm.cpp"
