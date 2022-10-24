@@ -10,7 +10,7 @@
 #define blank_characters_len 4
 const char blank_characters[] = { '\n', '\r', '\t', ' ' };
 #define special_characters_len 16
-// TODO: The length's don't need to be constants
+// TODO: The lengths don't need to be constants
 // Old special chars
 // const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
 const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@', '#' };

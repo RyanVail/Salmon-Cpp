@@ -89,7 +89,11 @@ This is a compiler for an esoteric-like programming language that is proably goi
 
 # Problems
 - ## General
+    - ### Add namespaces to all files so as to not clutter up the global space
+    - ### Add some tests that are run automatically and are scored automatically
+    - ### Make it so "main.cpp" stops reading a file when it gets zero bytes
     - ### "aarch32_asm.cpp" & "intermediate.cpp" contain a lot of inlined functions designed to make it simpler, but now after a few hundred more lines of code it just compilcates things **REMOVE IT!**
+    - ### Arrays have defined lengths right now which is just a dumb
 - ## Comments
     - ### Comment removal should be moved from being done in the intermediate step to the tokenizer
         - #### The lack of pre comment removal means that things like checking for '{' after "if" is broken
@@ -98,6 +102,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
     - ### Functions should keep the value they get as input (if it is one value) in R0 rather than offloading it to the stack
 - ## Intermediate
     - ### Intermediate should use a stack to represent values like "aarch32_asm.cpp" does now
+        - #### Add a way of adding psuedo break points that are done in intermediate.cpp that stop compiling the program and print the # of things on the stack and what is one the stack
         - #### A lot of things involving stacks can be removed from "aarch32_asm.cpp"
 - ## ASM
     - ### "aarch32_asm" Uses an array of two registers to represent the values in R0 and R1 but R1 index is never used, it would be better to use a single value_definition

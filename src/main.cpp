@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	std::vector<std::string> file_contents = load_file(argv[1]);
 	file_contents = blanker(file_contents);
 
-	// TODO: file_contents is just taking memory here same with inter_file after output_asm is made
+	// TODO: file_contents is just taking up memory here same with inter_file after output_asm is made
 
 	std::vector<inter> inter_file = file_into_inter(file_contents);
 
