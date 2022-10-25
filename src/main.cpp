@@ -19,7 +19,7 @@ const std::string help_message = "Usage: salmonc [options] file...\n\nOptions:\n
 #endif
 
 // This loads in a file as a string and returns it
-std::vector<std::string> load_file(char file_name[])
+std::vector<std::string> load_file(std::string file_name)
 {
 	std::fstream file_handle;
 	file_handle.open(file_name);

@@ -60,6 +60,6 @@ struct inter
 #define ASM 39
 
 // This takes in the tokenized file and returns the intermediate representation of the file
-std::vector<inter> file_into_inter(std::vector<std::string> &file);
+std::vector<inter> file_into_inter(std::vector<std::string> file);
 
 #endif

@@ -14,6 +14,11 @@ const int types_size[] = { 0, 4, 4 };
 // const int types_size[] = { 0, 4, 2, 1, 4, 2, 1 }; // The size in bytes each type takes up
 // #define TYPES_SIZE 7
 
+// This checks if a type is normal IE. 32 bit
+bool is_normal(unsigned char type);
+
+// This checks if a type is a char IE. 8 bit
+bool is_char(unsigned char type);
 
 // This takes in the two types and says how they can be transformed
 // 0 -> can be transformed 1 -> cannot be transformed without explicit transform 2-> can't be at all

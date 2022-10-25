@@ -1,8 +1,8 @@
 /* This file handles things that happen during intermediate to asm */
 
-#include<intermediate/intermediate.hpp>
 #include<string>
 #include<vector>
+#include<intermediate/intermediate.hpp>
 
 namespace postprocessor
 {

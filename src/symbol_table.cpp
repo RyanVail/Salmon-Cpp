@@ -9,10 +9,10 @@
 // This returns a pointer to the variable token by the same name/id or a null pointer
 variable_token* get_variable_token(std::string name, int id)
 {
-	for (variable_token current_variable : symbol_table.variables)
+	for (variable_token &current_variable : symbol_table.variables)
 	{
-		if (id) { if (variable_token.id == id) { return *variable_token; } }
-		else { if (variable_token.name == name) { return *variable_token; } }
+		if (id && current_variable.id == id) { return &current_variable; } 
+		if (name != "" && current_variable.name == name) { return &current_variable; }
 	}
 	return nullptr;
 }
@@ -21,15 +21,16 @@ variable_token* get_variable_token(std::string name, int id)
 void calc_function_stack_size()
 {
 	// Calculates all function's needed stack spaces
-	for (function_token current_function : symbol_table.functions)
+	for (function_token &current_function : symbol_table.functions)
 	{
-		for (variable_token current_variable : current_function.inputs)
+		for (variable_token &current_variable : current_function.inputs)
 		{
 			current_function.stack_space_needed += types_size[current_variable.type];
 		}
 	}
+
 	// Calculates global stack's size
-	for (variable_token current_variable : symbol_table.variables)
+	for (variable_token &current_variable : symbol_table.variables)
 	{
 		if (current_variable.owner == -1)
 		{
@@ -42,17 +43,17 @@ void calc_function_stack_size()
 // TODO: This only checks owners not scope. Allow this to check scope
 variable_token* get_local_variable_token(int owner_to_check, std::string name, int id)
 {
-	for (variable_token current_variable : symbol_table.variables)
+	for (variable_token &current_variable : symbol_table.variables)
 	{
 		if (id)
 		{
 			// If we have the same id as the variable we are checking and the variable is in this scope or global scope
-			if (current_variable.id == id && (current_variable.owner == owner_to_check || current_variable.owner == -1)) { return *current_variable; }
+			if (current_variable.id == id && (current_variable.owner == owner_to_check || current_variable.owner == -1)) { return &current_variable; }
 		}
 		else
 		{
 			// If we have the same name as the variable we are checking and the variable is in this scope or global scope
-			if (current_variable.name == name && (current_variable.owner == owner_to_check || current_variable.owner == -1)) { return *current_variable; }
+			if (current_variable.name == name && (current_variable.owner == owner_to_check || current_variable.owner == -1)) { return &current_variable; }
 		}
 	}
 	return nullptr;
@@ -61,10 +62,10 @@ variable_token* get_local_variable_token(int owner_to_check, std::string name, i
 // This returns a pointer to the function token by the same name/id or a null pointer
 function_token* get_function_token(std::string name, int id)
 {
-	for (function_token current_function : symbol_table.functions)
+	for (function_token &current_function : symbol_table.functions)
 	{
-		if (id) { if (current_function.id == id) { return *current_function; } }
-		else { if (current_function->name == name) { return *current_function; } }
+		if (id) { if (current_function.id == id) { return &current_function; } }
+		else { if (current_function.name == name) { return &current_function; } }
 	}
 	return nullptr;
 }

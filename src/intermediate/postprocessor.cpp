@@ -1,14 +1,15 @@
 /* This file handles things that happen during intermediate to asm */
 
-#include<postprocessor.hpp>
-#include<aarch32_asm.hpp>
+#include<intermediate/postprocessor.hpp>
+#include<intermediate/intermediate.hpp>
+#include<iostream>
 
 // TODO: This should change based on the compilation target
 
 namespace postprocessor
 {
     // This is called by "intermediate.cpp" if it hits a '#'
-    void process_instruction(std::vector<std::string> file, std::vector<std::string>::iterator &itr, std::vector<inter> &inter_output, value_defintion )
+    void process_instruction(std::vector<std::string> file, std::vector<std::string>::iterator &itr, std::vector<inter> &inter_output)
     {
         // If we are reading asm
         if (*(itr+1) == "asm")
@@ -30,7 +31,7 @@ namespace postprocessor
                 // If we hit a semicolon we add a new line
                 if (*itr == ";")
                 {
-                    output_asm.append("\n")
+                    output_asm.append("\n");
                     continue;
                 }
                 // If it isn't a postprocessor instruction or a semicolon we add it to the output and continue

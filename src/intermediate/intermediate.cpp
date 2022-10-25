@@ -48,6 +48,7 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 		{
 			if (rpn_size) { std::cout << "There must be nothing on the RPN stack to define a variable.\n"; exit(-1); }
 			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
+			//add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 			add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 			return inter(VARIABLE_DECLERATION, 0, *itr, get_variable_token(*itr));
 		}
@@ -82,7 +83,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 		// If we are doing postprocessing
 		if (*itr == "#")
 		{
-			postprocessor::process_instruction(file, itr, inter_output, );
+			postprocessor::process_instruction(file, itr, inter_output);
 			continue;
 		}
 		// If we have a constant

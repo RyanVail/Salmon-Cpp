@@ -117,7 +117,7 @@ bool is_str_letters(std::string &string_to_test)
 	for (char current_char : string_to_test)
 	{
 		// This sends an error if the current char isn't upercase, lowercase, or '_'
-		if (((current_char > 122 || current_char < 97) && (current_char > 90 || current_char < 65)) || current_char != '_')
+		if (((current_char > 122 || current_char < 97) && (current_char > 90 || current_char < 65)) && current_char != '_')
 		{
 			return false;
 		}

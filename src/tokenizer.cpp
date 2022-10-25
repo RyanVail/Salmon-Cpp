@@ -6,6 +6,7 @@
 
 #include<vector>
 #include<string>
+#include<iostream>
 
 #define blank_characters_len 4
 const char blank_characters[] = { '\n', '\r', '\t', ' ' };
@@ -43,26 +44,28 @@ bool is_special(char &character)
 }
 
 // This seperates the file into tokens 
-std::vector<std::string> file_into_tokens(std::vector<std::string> &file_contents)
+std::vector<std::string> file_into_tokens(std::vector<std::string> file_contents)
 {
 	std::vector<std::string> formated_file; // Each string is another token
 	int comments = 0; // The # of comments we are insde if any
-	char last_char; // The last char we had
 	// This goes over every string in the file
 	for (std::string current_string : file_contents)
 	{
 		std::string formated_string = "";
 		// This goes over every char in the string
-		for (char current_char : current_string)
+		for (std::string::iterator itr = current_string.begin(); itr < current_string.end(); itr++)
 		{
-			// If we are starting a comment we incrament "comments"
-			if (current_char == '*' && last_char == '/') { comments++; }
+			// We set the currrent char equal to the current char
+			char current_char = *itr;
 
-			// If we are ending a comment we decrament "comments"
-			if (current_char == '/' && last_char == '*') { comments--; }
+			// If we are starting a comment we incrament "comments" and skip the next '*'
+			if (*(itr+1) == '*' && current_char == '/') { comments++; itr++; continue; }
+
+			// If we are ending a comment we decrament "comments" and skip the next '/'
+			if (*(itr+1) == '/' && current_char == '*') { comments--; itr++; continue; }
 
 			// If we are in a comment we just repeat the loop while setting "last_char" to the current char
-			if (comments) { last_char = current_char; continue; }
+			if (comments) { continue; }
 
 			// If the current char is blank
 			if (is_blank(current_char))
@@ -86,7 +89,7 @@ std::vector<std::string> file_into_tokens(std::vector<std::string> &file_content
 				}
 				// We add the special char to the formated file in its own token
 				formated_string = ""; 
-				formated_file.push_back(std::string(current_char));
+				formated_file.push_back(std::string(1, current_char));
 				continue;
 			}
 			// We add the current char which by now is just a normal char
