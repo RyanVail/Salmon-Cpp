@@ -67,7 +67,7 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 	exit(-1);
 }
 // This turns a file into a series of inters
-std::vector<inter> file_into_inter(std::vector<std::string> &file)
+std::vector<inter> file_into_inter(std::vector<std::string> file)
 {
 	// TODO: All errors should show what they got instead of just what they expected
 	std::stack<inter> statment_stack;
@@ -82,7 +82,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> &file)
 		// If we are doing postprocessing
 		if (*itr == "#")
 		{
-			postprocessor::process_instruction(file, itr, inter_output);
+			postprocessor::process_instruction(file, itr, inter_output, );
 			continue;
 		}
 		// If we have a constant
