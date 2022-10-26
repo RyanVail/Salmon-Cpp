@@ -21,12 +21,9 @@ bool is_blank(char &character)
 {
 	// TODO: Find out if GCC unravels this at O3
 	for (int current_blank=0; current_blank < blank_characters_len; current_blank++)
-	{
 		if (blank_characters[current_blank] == character)
-		{
 			return true;
-		}
-	}
+
 	return false;
 }
 
@@ -34,12 +31,9 @@ bool is_blank(char &character)
 bool is_special(char &character)
 {
 	for (int current_special=0; current_special < special_characters_len; current_special++)
-	{
 		if (special_characters[current_special] == character)
-		{
 			return true;
-		}
-	}
+
 	return false;
 }
 
