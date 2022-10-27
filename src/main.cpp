@@ -7,7 +7,7 @@
 #include<stack>
 
 #include"tokenizer.cpp"
-#include<var_types.hpp>
+#include<vartypes.hpp>
 #include<symbol_table.hpp>
 #include<intermediate/intermediate.hpp>
 #include<asm/aarch32_asm.hpp>

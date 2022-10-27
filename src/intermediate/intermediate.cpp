@@ -5,88 +5,68 @@
 #include<iostream>
 #include<stack>
 #include<string>
-#include<var_types.hpp>
+#include<vartypes.hpp>
 #include<symbol_table.hpp>
 #include<main.hpp>
 #include<intermediate/postprocessor.hpp>
 #include<debug.hpp>
 
+/*inline char_operators_into_inter()
+{
+
+}*/
+
 // TODO: We don't need to be returning the intermediate anymore since we are passing a refrence to the outputed intermediate
 // This turns a single set of select tokens into their intermediate form
 inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_output, int rpn_size, int current_owner, int &current_stack)
 {
-	switch (*itr)
-	{
-	case "!":
-		return inter(NOT, 0, ""); 
-		break;
-	case "@": 
+	if (*itr == "!") 
+		return inter(NOT, 0, "");
+	if (*itr == "@") 
 		return inter(GET, 0, "");
-		break;
-	case "%":
+	if (*itr == "%")
 		return inter(MEM_ADDRS, 0, "");
-		break;
-	case "++":
+	if (*itr == "++")
 		return inter(INCRAMENT, 0, "");
-		break;
-	case "--":
+	if (*itr == "--")
 		return inter(DECRAMENT, 0, "");
-		break;
-	case "&":
+	if (*itr == "&")
 		return inter(AND, 0, "");
-		break;
-	case "|":
+	if (*itr == "|")
 		return inter(OR, 0, "");
-		break;
-	case "^":
+	if (*itr == "^")
 		return inter(XOR, 0, "");
-		break;
-	case "<<":
+	if (*itr == "<<")
 		return inter(LSL, 0, "");
-		break;
-	case ">>":
+	if (*itr == ">>")
 		return inter(LSR, 0, "");
-		break;
-	case "=":
+	if (*itr == "=")
 		return inter(EQUAL, 0, "");
-		break;
-	case "==":
+	if (*itr == "==")
 		return inter(IS_EQUAL, 0, "");
-		break;
-	case "<":
+	if (*itr == "<")
 		return inter(LESS, 0, "");
-		break;
-	case "<=":
+	if (*itr == "<=")
 		return inter(LESS_EQUAL, 0, "");
-		break;
-	case ">":
+	if (*itr == ">")
 		return inter(GREATER, 0, "");
-		break;
-	case ">=":
+	if (*itr == ">=")
 		return inter(GREATER_EQUAL, 0, "");
-		break;
-	case "+":
+	if (*itr == "+")
 		return inter(ADD, 0, "");
-		break;
-	case "-":
+	if (*itr == "-")
 		return inter(SUB, 0, "");
-		break;
-	case "/":
+	if (*itr == "/")
 		return inter(DIV, 0, "");
-		break;
-	case "*": 
+	if (*itr == "*") 
 		return inter(MUL, 0, "");
-		break;
-	case "return":
+	if (*itr == "return")
 		inter_output.push_back(inter(RETURN, 0, ""));
-		break;
-	case "break":
+	if (*itr == "break")
 		inter_output.push_back(inter(BREAK, 0, ""));
-		break;
-	case "continue":
+	if (*itr == "continue")
 		inter_output.push_back(inter(CONTINUE, 0, ""));
-		break;
-	}
+
 	// This checks if the string is a valid variable
 	if (is_str_letters(*itr))
 	{
@@ -139,19 +119,24 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 		if (rpn_size < 0)
 			std::cout << "RPN stack size fell below zero.\n"; exit(-1);
 
-		case is_str_num(*itr):
+		// If we are doing postprocessing
+		if (*itr == "#")
+		{
+			postprocessor::process_instruction(file, itr, inter_output);
+			continue;
+		}
+
+		// If we have a constant
+		if (is_str_num(*itr))
+		{
 			inter_output.push_back(inter(CONST, get_str_num(*itr), ""));
 			rpn_size++;
 			continue;
+		}
 
-		// Statment switches
-		switch(*itr)
+		// If we hit a '$' meaning function call
+		if (*itr == "$") 
 		{
-		case "#":
-			postprocessor::process_instruction(file, itr, inter_output);
-			continue;
-			break;
-		case "$": 
 			// itr is the function name now
 			itr++;
 			
@@ -163,10 +148,15 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 			}
 
 			inter_output.push_back(inter(FUNC_CALL, get_function_token(*itr)->id, *itr));
+
 			rpn_size -= get_function_token(*itr)->inputs.size();
+			
 			continue;
-			break;
-		case "}":
+		}
+
+		// If we hit a '}'
+		if (*itr == "}")
+		{
 			if (rpn_size && statment_stack.top().id != WHILE_END)
 			{
 				std::cout << "RPN stack size should be zero before ending a statment.\n"; 
@@ -188,23 +178,34 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 			inter_output.push_back(statment_stack.top());
 			statment_stack.pop();
 			continue;
-			break;
-		case ";":
+		}
+
+		// If we hit a ';' and are defining the reset of the RPN stack
+		if (*itr == ";")
+		{
+			// If there is nothing in the stack we don't need to reset it
+			if (!rpn_size && optimization_level > 0) { continue; }
 			inter_output.push_back(inter(RESET_RPN, 0, ""));
 			rpn_size = 0;
 			continue;
-			break;
-		case "if":
+		}
+
+		// If we have an if statment
+		if (*itr == "if")
+		{
 			inter_output.push_back(inter(IF_BEGIN, 0, ""));
 			statment_stack.push(inter(IF_END, 0, ""));
 			itr++;
 			if (*(itr) != "{") { std::cout << "Expected '{' after an if statment.\n"; exit(-1); }
 			rpn_size--;
 			continue;
-			break;
-		case "else":
+		}
+
+		// If we have a else statment
+		if (*itr == "else")
+		{
 			if (inter_output[inter_output.size()-1].id != IF_END)
-				std::cout << "Expected an end to an if statment before an else statment.\n"; exit(-1);
+				std::cout << "Expected an end to an if statment before an else statment.\n"; exit(-1); 
 
 			itr++;
 
@@ -214,25 +215,56 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 			inter_output.push_back(inter(ELSE_BEGIN, 0, ""));
 			statment_stack.push(inter(ELSE_END, 0, ""));
 			continue;
-			break;
+		}
 
-		case "while":
+		// If we have a while loop
+		if (*itr == "while")
+		{
 			inter_output.push_back(inter(WHILE_BEGIN, 0, ""));
 			statment_stack.push(inter(WHILE_END, 0, ""));
 			itr++;
-			if (*(itr) != "{") { std::cout << "Expected '{' after a while statment.\n"; exit(-1); }
+
+			if (*(itr) != "{") 
+			{ 
+				std::cout << "Expected '{' after a while statment.\n"; 
+				exit(-1); 
+			}
+
 			rpn_size--;
 			continue;
-			break;
-		case "fn":
-			if(current_owner != -1) { std::cout << "Function defintion inside another function is not valid.\n"; exit(-1); }
-			if(rpn_size) { std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; exit(-1); }
+		}
+
+		// If we are defining a function
+		if (*itr == "fn")
+		{
+			if(current_owner != -1) 
+			{ 
+				std::cout << "Function defintion inside another function is not valid.\n"; 
+				exit(-1); 
+			}
+			if(rpn_size)
+			{ 
+				std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; 
+				exit(-1); 
+			}
 			itr++;
 			std::string name = (*itr).substr(0, (*itr).find('(') );
 			// This checks for a lot of possible errors
-			if(!is_str_letters(name)) { std::cout << "The function name: " << name << " contains invalid characters.\n"; exit(-1); }
-			if(get_function_token(name)) { std::cout << "The function name: " << name << " is already used.\n"; exit(-1); }
-			if(!is_valid_name(name)) { std::cout << "The function name: " << name << " isn't valid.\n"; exit(-1); }
+			if(!is_str_letters(name)) 
+			{ 
+				std::cout << "The function name: " << name << " contains invalid characters.\n"; 
+				exit(-1); 
+			}
+			if(get_function_token(name)) 
+			{ 
+				std::cout << "The function name: " << name << " is already used.\n"; 
+				exit(-1); 
+			}
+			if(!is_valid_name(name)) 
+			{ 
+				std::cout << "The function name: " << name << " isn't valid.\n"; 
+				exit(-1); 
+			}
 			add_function_token(name);
 			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
 			// This reads through the input variables of the function
@@ -260,7 +292,11 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 					// This checks if there is another variable with the same name
 					// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner
 					// TODO: This should check if the variable name is valid
-					if (get_variable_token(token)) { std::cout << "A variable with that name already exists.\n"; exit(-1); }
+					if (get_variable_token(token)) 
+					{ 
+						std::cout << "A variable with that name already exists.\n"; 
+						exit(-1); 
+					}
 					stack_space_needed -= types_size[current_type];
 					add_variable_token(token, current_type, symbol_table.functions.size()-1, stack_space_needed);
 					current_type = 0;
@@ -281,11 +317,9 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 				std::cout << "Expected '{' after a function defintion.\n"; exit(-1);
 
 			continue;
-			break;
 		}
 
-
-		// Operation & variable switching
+		// This turns any remaining tokens into their intermediate forms
 		inter_output.push_back(single_into_inter(&(*itr),inter_output,rpn_size,current_owner,current_stack));
 
 		// Updating the size of the RPN stack

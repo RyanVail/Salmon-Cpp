@@ -4,7 +4,7 @@
 #include<string>
 #include<vector>
 #include<iostream>
-#include<var_types.hpp>
+#include<vartypes.hpp>
 
 // This returns a pointer to the variable token by the same name/id or a null pointer
 variable_token* get_variable_token(std::string name, int id)

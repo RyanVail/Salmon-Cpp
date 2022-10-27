@@ -2,7 +2,7 @@
 
 #include<debug.hpp>
 #include<string>
-#include<var_types.hpp>
+#include<vartypes.hpp>
 #include<intermediate/intermediate.hpp>
 
 const std::string INTERS[] = { "VARIABLE_TYPE", "VARIABLE_DECLERATION", "VARIABLE_REASIGNMENT", "VARIABLE_ACCESS", "NOT", "GET", "MEM_ADDRS", "INCRAMENT", "DECRAMENT", "AND", "OR", "XOR", "LSL", "LSR", "EQUAL", "IS_EQUAL", "LESS", "LESS_EQUAL", "GREATER", "GREATER_EQUAL", "ADD", "SUB", "DIV", "MUL", "FUNC_BEGIN", "FUNC_END", "FUNC_CALL", "IF_BEGIN", "IF_END", "VARIABLE_NAME", "RESET_RPN", "CONST", "WHILE_BEGIN", "WHILE_END", "ELSE_BEGIN", "ELSE_END", "CONTINUE", "BREAK", "RETURN", "ASM" };

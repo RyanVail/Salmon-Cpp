@@ -1,6 +1,6 @@
 /* This file handles turning string based variable types into their corrisponding id */
 
-#include<var_types.hpp>
+#include<vartypes.hpp>
 #include<string>
 #include<vector>
 #include<math.h> // This is just used for pow it might be better to rewrite it

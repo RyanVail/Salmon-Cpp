@@ -11,35 +11,35 @@
 
 namespace aarch32_asm
 {
-// Operate on 0 registers
-// BREAK
-// CONTINUE
-// QUIT
-// Operate on only R0
-#define NOT_ASM_BOOL "EOR R0, R0"
-#define NOT_ASM_INT "CLZ R0, R0\nLSR R0, #5"
-#define GET_ASM_NORMAL "LDR R0, [R0]"
-#define GET_ASM_CHAR "LDRB R0, [R0]"
-#define INCRAMENT_ASM_NORMAL "ADD R0, #1"
-#define DECRAMENT_ASM_NORMAL "SUB R0, #1"
-// IF_BEGIN
-// WHILE_BEGIN
-#define RETURN_ASM_NORMAL "BX LR"
-// Operate on R0 & R1
-#define LESS_EQUAL_ASM_NORMAL "CMP R0, R1\nMOVLE R0, #0\nMOVGT R0, #1"
-#define LESS_ASM_NORMAL "CMP R0, R1\nMOVLQ R0, #0\nMOVGT R0, #1"
-#define GREATER_ASM_NORMAL "CMP R0, R1\nMOVLE R0, #0\nMOVGT R0, #1"
-#define GREATER_EQUAL_ASM_NORMAL "CMP R0, R1\nMOVLQ R0, #0\nMOVGT R0, #1"
-#define EQUAL_ASM_NORMAL "CMP R0, R1\nMOVEQ R0, #1\nMOVNE R0, #0"
-#define ADD_ASM_NORMAL "ADD R0, R1"
-#define SUB_ASM_NORMAL "SUB R0, R1"
-#define MUL_ASM_NORMAL "MUL R0, R1"
-#define AND_ASM_NORMAL "AND R0, R1"
-#define OR_ASM_NORMAL "ORR R0, R1"
-#define XOR_ASM_NORMAL "EOR R0, R1"
-#define LSL_ASM_NORMAL "LSL R0, R1"
-#define LSR_ASM_NORMAL "LSR R0, R1"
-#define RESET_RPN_ASM_NORMAL "MOV R0, #0\nMOV R1, R0"
+    // Operate on 0 registers
+    // BREAK
+    // CONTINUE
+    // QUIT
+    // Operate on only R0
+    #define NOT_ASM_BOOL "EOR R0, R0"
+    #define NOT_ASM_INT "CLZ R0, R0\nLSR R0, #5"
+    #define GET_ASM_NORMAL "LDR R0, [R0]"
+    #define GET_ASM_CHAR "LDRB R0, [R0]"
+    #define INCRAMENT_ASM_NORMAL "ADD R0, #1"
+    #define DECRAMENT_ASM_NORMAL "SUB R0, #1"
+    // IF_BEGIN
+    // WHILE_BEGIN
+    #define RETURN_ASM_NORMAL "BX LR"
+    // Operate on R0 & R1
+    #define LESS_EQUAL_ASM_NORMAL "CMP R0, R1\nMOVLE R0, #0\nMOVGT R0, #1"
+    #define LESS_ASM_NORMAL "CMP R0, R1\nMOVLQ R0, #0\nMOVGT R0, #1"
+    #define GREATER_ASM_NORMAL "CMP R0, R1\nMOVLE R0, #0\nMOVGT R0, #1"
+    #define GREATER_EQUAL_ASM_NORMAL "CMP R0, R1\nMOVLQ R0, #0\nMOVGT R0, #1"
+    #define EQUAL_ASM_NORMAL "CMP R0, R1\nMOVEQ R0, #1\nMOVNE R0, #0"
+    #define ADD_ASM_NORMAL "ADD R0, R1"
+    #define SUB_ASM_NORMAL "SUB R0, R1"
+    #define MUL_ASM_NORMAL "MUL R0, R1"
+    #define AND_ASM_NORMAL "AND R0, R1"
+    #define OR_ASM_NORMAL "ORR R0, R1"
+    #define XOR_ASM_NORMAL "EOR R0, R1"
+    #define LSL_ASM_NORMAL "LSL R0, R1"
+    #define LSR_ASM_NORMAL "LSR R0, R1"
+    #define RESET_RPN_ASM_NORMAL "MOV R0, #0\nMOV R1, R0"
 
     struct statment_defintion
     {
@@ -135,13 +135,11 @@ namespace aarch32_asm
                             get_variable_token(current_inter.refrenced_name)->stack_location,
                         asm_file, asm_functions);
                 break;
-            case INCRAMENT;
+            case INCRAMENT:
                 add_asm(in_func, INCRAMENT_ASM_NORMAL, asm_file, asm_functions);
                 break;
             case DECRAMENT:
                 add_asm(in_func, DECRAMENT_ASM_NORMAL, asm_file, asm_functions);
-                break;
-            case default
                 break;
             }
 
@@ -207,11 +205,12 @@ namespace aarch32_asm
         if (1)
         {
             switch (current_inter_id)
+            {
             case LESS_EQUAL:
                 add_asm(in_func, LESS_EQUAL_ASM_NORMAL, asm_file, asm_functions);
                 break;
             case LESS:
-                add_asm(in_func, LESS_ASM_NORMAL, asm_file, asm_functions)
+                add_asm(in_func, LESS_ASM_NORMAL, asm_file, asm_functions);
                 break;
             case GREATER:
                 add_asm(in_func, GREATER_ASM_NORMAL, asm_file, asm_functions);
@@ -247,8 +246,7 @@ namespace aarch32_asm
             case MUL:
                 add_asm(in_func, MUL_ASM_NORMAL, asm_file, asm_functions);
                 break;
-            case default:
-                break;
+            }
         }
     }
 
@@ -280,56 +278,7 @@ namespace aarch32_asm
                     break;
                 case VARIABLE_ACCESS:
                     // TODO: This should go back and find the "VARIABLE_TYPE" token since it isn't set in "intermediate.cpp" or do it in "intermediate.cpp"
-                case FUNC_BEGIN:
-                    if (!statment_stack.empty() || in_func)
-                    {
-                        std::cout << "Functions can only be defined in the global scope.\n";
-                        exit(-1);
-                    }
-                    if (!rpn_stack.empty())
-                    {
-                        std::cout << "RPN stack should be empty before defining a function.\n";
-                        exit(-1);
-                    }
-                    in_func = true;
-                    statment_stack.push(statment_defintion(0, "fn_" + current_inter.refrenced_name));
-                    asm_functions.push_back("");
-                    add_asm(in_func,
-                            "fn_" +
-                                current_inter.refrenced_name +
-                                ":\n" +
-                                "SUB SP, #" +
-                                std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
-                            asm_file, asm_functions);
-                    int current_register = 0;
-                    for (variable_token &current_variable : get_function_token(current_inter.refrenced_name)->inputs)
-                    {
-                        // If this is 32 bit
-                        if (is_normal(current_variable.type))
-                        {
-                            add_asm(in_func,
-                                    "STR R" +
-                                        std::to_string(current_register) +
-                                        ", [SP,#" +
-                                        std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
-                                        "]" +
-                                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
-                                    asm_file, asm_functions);
-                        }
-                        // If this is 8 bit
-                        else if (is_char(current_variable.type))
-                        {
-                            add_asm(in_func,
-                                    "STRB R" +
-                                        std::to_string(current_register) +
-                                        ", [SP,#" +
-                                        std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
-                                        "]" +
-                                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
-                                    asm_file, asm_functions);
-                        }
-                        // else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }
-                    }
+                    rpn_stack.push(value_asm::value_defintion(0, current_inter.refrenced_variable_token, 0, get_variable_token(current_inter.refrenced_name)->type));
                     break;
                 case WHILE_BEGIN:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
@@ -474,7 +423,56 @@ namespace aarch32_asm
                                 current_inter.refrenced_name,
                             asm_file, asm_functions);
                     break;
-                case default:
+                case FUNC_BEGIN:
+                    if (!statment_stack.empty() || in_func)
+                    {
+                        std::cout << "Functions can only be defined in the global scope.\n";
+                        exit(-1);
+                    }
+                    if (!rpn_stack.empty())
+                    {
+                        std::cout << "RPN stack should be empty before defining a function.\n";
+                        exit(-1);
+                    }
+                    in_func = true;
+                    statment_stack.push(statment_defintion(0, "fn_" + current_inter.refrenced_name));
+                    asm_functions.push_back("");
+                    add_asm(in_func,
+                            "fn_" +
+                                current_inter.refrenced_name +
+                                ":\n" +
+                                "SUB SP, #" +
+                                std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                            asm_file, asm_functions);
+                    current_register = 0;
+                    for (variable_token &current_variable : get_function_token(current_inter.refrenced_name)->inputs)
+                    {
+                        // If this is 32 bit
+                        if (is_normal(current_variable.type))
+                        {
+                            add_asm(in_func,
+                                    "STR R" +
+                                        std::to_string(current_register) +
+                                        ", [SP,#" +
+                                        std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
+                                        "]" +
+                                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                                    asm_file, asm_functions);
+                        }
+                        // If this is 8 bit
+                        else if (is_char(current_variable.type))
+                        {
+                            add_asm(in_func,
+                                    "STRB R" +
+                                        std::to_string(current_register) +
+                                        ", [SP,#" +
+                                        std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
+                                        "]" +
+                                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                                    asm_file, asm_functions);
+                        }
+                        // else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }
+                    }
                     break;
             }
         }

@@ -2,8 +2,6 @@
 
 // TODO: Some special characters shouldn't add spaces based on the new RPN system
 
-#pragma once
-
 #include<vector>
 #include<string>
 #include<iostream>
@@ -59,7 +57,8 @@ std::vector<std::string> file_into_tokens(std::vector<std::string> file_contents
 			if (*(itr+1) == '/' && current_char == '*') { comments--; itr++; continue; }
 
 			// If we are in a comment we just repeat the loop while setting "last_char" to the current char
-			if (comments) { continue; }
+			if (comments)
+				continue;
 
 			// If the current char is blank
 			if (is_blank(current_char))
@@ -72,6 +71,7 @@ std::vector<std::string> file_into_tokens(std::vector<std::string> file_contents
 				}
 				continue;
 			}
+
 			// If the current char is special
 			if (is_special(current_char))
 			{
@@ -90,7 +90,8 @@ std::vector<std::string> file_into_tokens(std::vector<std::string> file_contents
 			formated_string.push_back(current_char);
 		}
 		// If we have left overs in formated string
-		if (formated_string.size()) { formated_file.push_back(formated_string); }
+		if (formated_string.size())
+			formated_file.push_back(formated_string);
 	}
 	return formated_file;
 }

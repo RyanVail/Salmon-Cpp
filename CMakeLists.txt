@@ -12,7 +12,7 @@ include_directories(include)
 add_executable(Salmon
 	src/symbol_table.cpp
 	src/debug.cpp
-	src/var_types.cpp
+	src/vartypes.cpp
 	src/intermediate/intermediate.cpp
 	src/main.cpp
 	src/intermediate/postprocessor.cpp

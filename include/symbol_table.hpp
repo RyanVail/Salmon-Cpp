@@ -6,7 +6,7 @@
 #include<string>
 #include<vector>
 #include<iostream>
-#include<var_types.hpp>
+#include<vartypes.hpp>
 
 struct symbols;
 struct variable_token;
