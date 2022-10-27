@@ -32,7 +32,11 @@ std::vector<std::string> load_file(std::string file_name)
 		std::getline(file_handle, file_line);
 		if (file_line == "") 
 		{ 
-			if (file_contents.size() <= 0) { std::cout << "Something went wrong while reading the file.\n"; exit(-1); } // TODO: Replace this, it's just terrible
+			if (file_contents.size() <= 0) 
+			{ 
+				std::cout << "Something went wrong while reading the file.\n"; 
+				exit(-1); 
+			}
 			return file_contents;
 		}
 		file_contents.push_back(file_line);
@@ -48,29 +52,33 @@ int main(int argc, char *argv[])
 		if (argv[i][0] == '-' && argv[i][1] == '-')
 		{
 			if (argv[i] == std::string("--help"))
-			{
 				std::cout << help_message; exit(1);
-			}
+
 			std::cout << "Unknown option: " << argv[i] << "\n"; exit(-1);
 		}
 		else if (argv[i][0] == '-')
 		{
-			switch(argv[i][1])
+			switch(argv[i][1]) 
 			{
-				case 'h':
-					std::cout << help_message; exit(1);
-					break;
-				default:
-					std::cout << "Unknown option: " << argv[i] << "\n"; exit(-1);
+			case 'h':
+				std::cout << help_message; exit(1);
+				break;
+			default:
+				std::cout << "Unknown option: " << argv[i] << "\n"; exit(-1);
 			}
 		}
 		else 
 		{
-			if (file_name != "") { std::cout << "Expected one file name but got multiple.\n"; exit(-1); }
+			if (file_name != "")
+				std::cout << "Expected one file name but got multiple.\n"; exit(-1);
+
 			file_name = argv[i];
 		}
 	}
-	if (file_name == "") { std::cout << "Please enter a file name to compile or use -h to display help.\n"; exit(-1); };
+
+	if (file_name == "")
+		std::cout << "Please enter a file name to compile or use -h to display help.\n"; exit(-1);
+
 	std::cout << "Compiling file " << file_name << " with " << VERSION << "...\n\n";
 
 	std::vector<inter> inter_file = file_into_inter(file_into_tokens(load_file(file_name)));
@@ -81,14 +89,14 @@ int main(int argc, char *argv[])
 	#endif
 	
 	std::vector<std::string> output_asm;
+
 	if (compilation_target == AARCH32_COMPILATION_TARGET) 
-	{
 		output_asm = aarch32_asm::intermediates_into_asm(inter_file);
-	}
-	else { std::cout << "Error while choosing compilation target.\n"; exit(-1); }
+	else
+		std::cout << "Error while choosing compilation target.\n"; exit(-1);
+
 	for (std::string current_asm : output_asm)
-	{
 		std::cout << current_asm << "\n";
-	}
+
 	return 0;
 }

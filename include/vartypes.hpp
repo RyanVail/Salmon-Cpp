@@ -1,7 +1,7 @@
 /* This file handles turning string based variable types into their corrisponding id */
 
-#ifndef VAR_TYPES_HPP
-#define VAR_TYPES_HPP
+#ifndef VARTYPES_HPP
+#define VARTYPES_HPP
 
 #include<string>
 #include<vector>

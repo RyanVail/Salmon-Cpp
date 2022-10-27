@@ -15,10 +15,16 @@ namespace postprocessor
         if (*(itr+1) == "asm")
         {
             std::string output_asm;
-            while (1)
+            
+            while (true)
             {
                 itr++;
-                if (itr == file.end() || itr+1 == file.end() || itr+2 == file.end()) { std::cout << "Expected to find \"#asm_end\" before the end of the file.\n"; exit(-1); }
+                if (itr == file.end() || itr+1 == file.end() || itr+2 == file.end()) 
+                { 
+                    std::cout << "Expected to find \"#asm_end\" before the end of the file.\n"; 
+                    exit(-1);
+                }
+
                 // If we hit another postprocessor instruction
                 if (*itr == "#") 
                 {
@@ -28,17 +34,21 @@ namespace postprocessor
                     std::cout << "Found unexpected post processor instruction while parsing #asm.\n"; 
                     exit(-1);
                 }
+
                 // If we hit a semicolon we add a new line
                 if (*itr == ";")
                 {
                     output_asm.append("\n");
                     continue;
                 }
+
                 // If it isn't a postprocessor instruction or a semicolon we add it to the output and continue
                 output_asm.append(*itr + " ");
             }
+
             // We incrament the iterator twice to go over "!asm"
             itr += 2;
+
             // We save the outputed asm into the "refrenced_name" of an "ASM" intermediate
             inter_output.push_back(inter(ASM, 0, output_asm));
         }

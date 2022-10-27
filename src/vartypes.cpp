@@ -6,7 +6,7 @@
 #include<math.h> // This is just used for pow it might be better to rewrite it
 
 // 0 is null type
-const std::vector<std::string> types = { "", "u32", "i32" };
+const std::vector<std::string> types = { "null", "bool", "ibool", "u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64", "u128", "i128" };
 #define TYPES_SIZE 3
 const std::vector<std::string> invalid_names = { "if", "while", "else", "continue", "break", "return" };
 #define INVALID_NAMES_SIZE 6
@@ -20,14 +20,18 @@ const std::vector<std::string> invalid_names = { "if", "while", "else", "continu
 // This checks if a type is normal IE. 32 bit
 bool is_normal(unsigned char type)
 {
-    if (type) { return true; }
+    if (type)
+		return true;
+
     return false;
 };
 
 // This checks if a type is a char IE. 8 bit
 bool is_char(unsigned char type)
 {
-	if (type) { return true; }
+	if (type)
+		return true;
+
 	return false;
 }
 
@@ -43,13 +47,11 @@ unsigned char can_be_transformed_into(unsigned char type0, unsigned char type1)
 bool is_valid_name(std::string name)
 {
 	for (int i=0; i < INVALID_NAMES_SIZE; i++)
-	{
 		if (name == invalid_names[i]) { return false; }
-	}
+
 	for (int i=0; i < TYPES_SIZE; i++)
-	{
 		if (name == types[i]) { return false; }
-	}
+
 	return true;
 }
 
@@ -57,12 +59,9 @@ bool is_valid_name(std::string name)
 int is_type(std::string possible_type)
 {
 	for (int i=0; i < TYPES_SIZE; i++)
-	{
 		if (types[i] == possible_type)
-		{
 			return i;
-		}
-	}
+
 	return -1; // TODO: This should return 0 like the function bellow and all calls of this function need to be fixed after that
 }
 
@@ -70,19 +69,18 @@ int is_type(std::string possible_type)
 int into_id(std::string &string_type)
 {
 	for (int i=1; i < TYPES_SIZE; i++)
-	{
 		if (types[i] == string_type)
-		{
 			return i;
-		}
-	}
+
 	return 0;
 }
 
 // This turns a variable id into it's string counterpart or NULL if it isn't valid
 std::string id_into_string(int var_id)
 {
-	if (var_id >= TYPES_SIZE || var_id <= 0) { return NULL; }
+	if (var_id >= TYPES_SIZE || var_id <= 0)
+		return NULL;
+
 	return types[var_id];
 }
 
@@ -90,12 +88,9 @@ std::string id_into_string(int var_id)
 bool is_str_num(std::string &possible_number)
 {
 	for (std::string::iterator itr = possible_number.begin(); itr != possible_number.end(); itr++)
-	{
 		if (*itr < 48 || *itr > 57)
-		{
 			return false;
-		}
-	}
+
 	return true;
 }
 
@@ -105,23 +100,18 @@ int get_str_num(std::string &possible_number)
 {
 	int value = 0;
 	for (int i=0; i < possible_number.size(); i++)
-	{
-		value += (possible_number[i] - 48) * pow(10, -i + possible_number.size() - 1); // This just shifts the ASCII over
-	}
+		value += (possible_number[i] - 48) * pow(10, -i + possible_number.size() - 1);
+
 	return value;
 }
 
-// Checks if a string is just letters
+// Checks if a string is just letters or '_'s
 bool is_str_letters(std::string &string_to_test)
 {
 	for (char current_char : string_to_test)
-	{
-		// This sends an error if the current char isn't upercase, lowercase, or '_'
 		if (((current_char > 122 || current_char < 97) && (current_char > 90 || current_char < 65)) && current_char != '_')
-		{
 			return false;
-		}
-	}
+
 	return true;
 }
 
