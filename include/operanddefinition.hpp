@@ -1,7 +1,7 @@
 /* This file holds things that help with operands */
 
-#ifndef VALUE_ASM_HPP
-#define VALUE_ASM_HPP
+#ifndef OPERANDDEFINITION_HPP
+#define OPERANDDEFINITION_HPP
 
 #include<symboltable.hpp>
 #include<intermediate/intermediate.hpp>
@@ -16,9 +16,11 @@ namespace operand
         variable_token* accessed_variable = 0; // If we are accessing a variable a pointer to it
         function_token* called_function = 0; // If we are calling a function a pointer to it
         u8 final_type = 0; // The type this operation would result in
+
         operand_def(i32 _const_value, variable_token *_accessed_variable, function_token *_called_function, u8 _final_type) 
         : const_value(_const_value), accessed_variable(_accessed_variable), called_function(_called_function), final_type(_final_type) {};
     };
+
 }
 
 #endif

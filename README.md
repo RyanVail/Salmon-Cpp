@@ -89,6 +89,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
 
 # Problems and TODOs
 - ## General
+    - ### Constants above the 32 bit int limit don't work right now
     - ### **TYPES ARE JUST NOT USED LIKE AT ALL!**
     - ### There is no support for signed types
     - ### Add namespaces to all files so as to not clutter up the global space

@@ -11,9 +11,34 @@
 #include<intermediate/postprocessor.hpp>
 #include<debug.hpp>
 #include<operanddefinition.hpp>
+#include<error.h>
 
-static std::vector<inter> inter_output;
 static std::stack<operand::operand_def> operand_stack;
+static std::stack<inter> statment_stack;
+static std::vector<inter> inter_output;
+static i32 current_owner;
+static i32 current_stack;
+
+inline void add_const_operand(u8 _type, u32 _const)
+{
+	operand_stack.push(operand::operand_def(_const, 0, 0, _type));
+}
+inline void add_variable_operand(variable_token *to_add)
+{
+	u8 _variable_type = to_add->type;
+	operand_stack.push(operand::operand_def(0, to_add, 0, _variable_type));
+}
+inline void add_function_call_operand(function_token *to_add)
+{
+	u8 _func_return_type = to_add->output;
+	operand_stack.push(operand::operand_def(0, 0, to_add, _func_return_type));
+}
+
+// This takes the top operand off and generates its intermediate repersentation
+void top_operand_to_inter()
+{
+	// TODO: Add this
+}
 
 // This function turns single char operations into their intermediate form
 // Returns true if it added something
@@ -21,7 +46,7 @@ inline bool single_char_operators_into_inter(i8 operator_char)
 {
 	switch(operator_char)
 	{
-	case '!': 
+	case '!':
 		inter_output.push_back(inter(NOT, 0, ""));
 		break;
 	case '@':
@@ -57,7 +82,7 @@ inline bool single_char_operators_into_inter(i8 operator_char)
 	case '/':
 		inter_output.push_back(inter(DIV, 0, ""));
 		break;
-	case '*': 
+	case '*':
 		inter_output.push_back(inter(MUL, 0, ""));
 		break;
 	default:
@@ -131,10 +156,7 @@ inline void single_into_inter(std::string *itr, i32 rpn_size, i32 current_owner,
 
 		// We check if the variable is in the symbol table, if not we send an error
 		if (!get_variable_token(*itr))
-		{
-			std::cout << "Unknown variable: " << *itr << ".\n";
-			exit(-1);
-		}
+			error::send_error("Unknown variable: " + *itr + ".\n");
 
 		inter_output.push_back(inter(VARIABLE_ACCESS, 0, *itr, get_variable_token(*itr)));
 		return;
@@ -150,27 +172,16 @@ inline void single_into_inter(std::string *itr, i32 rpn_size, i32 current_owner,
 		return;
 	}
 
-	std::cout << "Unknown token: " << *itr << ".\n";
-	exit(-1);
+	error::send_error("Unknown token: " + *itr + ".\n");
 }
 
 // This turns a file into a series of inters
 std::vector<inter> file_into_inter(std::vector<std::string> file)
 {
 	// TODO: All errors should show what they got instead of just what they expected
-	std::stack<inter> statment_stack;
-	// TODO: Intermediate should only be operating on two values at a time to make optimizations faster
-	i32 rpn_size = 0;
-	i32 current_owner = -1; // If there is a variable defintion this will be the value of the owner
-	i32 current_stack = 0; // The current stack location
+	current_owner = -1;
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
-		if (rpn_size < 0)
-		{
-			std::cout << "RPN stack size fell below zero.\n"; 
-			exit(-1);
-		}
-
 		// If we are doing postprocessing
 		if (*itr == "#")
 		{
@@ -181,28 +192,25 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 		// If we have a constant
 		if (is_str_num(*itr))
 		{
-			inter_output.push_back(inter(CONST, get_str_num(*itr), ""));
-			rpn_size++;
+			// TODO: This assumes the type is always u32, it shouldn't do that!
+			add_const_operand(7, get_str_num(*itr));
 			continue;
 		}
 
 		// If we hit a '$' meaning function call
-		if (*itr == "$") 
+		if (*itr == "$")
 		{
 			// itr is the function name now
 			itr++;
-			
+
 			// Makes sure the function call name is valid
-			if (!get_function_token(*itr)) 
-			{ 
-				std::cout << "Unknown function: " << *itr << ".\n"; 
-				exit(-1); 
-			}
+			if (!get_function_token(*itr))
+				error::send_error("Unknown function: " + *itr + ".\n");
 
 			inter_output.push_back(inter(FUNC_CALL, get_function_token(*itr)->id, *itr));
 
 			rpn_size -= get_function_token(*itr)->inputs.size();
-			
+
 			continue;
 		}
 
@@ -210,16 +218,10 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 		if (*itr == "}")
 		{
 			if (rpn_size && statment_stack.top().id != WHILE_END)
-			{
-				std::cout << "RPN stack size should be zero before ending a statment.\n"; 
-				exit(-1);
-			}
+				error::send_error("RPN stack size should be zero before ending a statment.\n");
 
 			if (rpn_size >= 2) 
-			{ 
-				std::cout << "Only one thing is allowed the be on the RPN stack while ending a while statment.\n";
-				exit(-1); 
-			}
+				error::send_error("Expected one thing operand after ending a while statment but got: " + std::to_string(operand_stack.size()) + ".\n");
 			
 			if (statment_stack.empty())
 			{
