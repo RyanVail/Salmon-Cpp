@@ -20,13 +20,17 @@ void print_inter(inter to_print)
 void print_symbol_table()
 {
 	std::cout << "VARIABLE SYMBOL TABLE CONTENTS:\n";
-	for (std::vector<variable_token>::iterator itr = symbol_table.variables.begin(); itr != symbol_table.variables.end(); itr++)
-	{
-		std::cout << "|name| " << itr->name << " |type| " << id_into_string(itr->type) << " |stack location| " << itr->stack_location << " |owner| " << itr->owner << "\n";
-	}
+
+	for (variable_token current_variable : symbol_table.variables)
+		std::cout << "|name| " << current_variable.name 
+		<< " |type| " << id_into_string(current_variable.type) 
+		<< " |stack location| " << current_variable.stack_location 
+		<< " |owner| " << current_variable.owner << "\n";
+
 	std::cout << "FUNCTION SYMBOL TABLE CONTENTS:\n";
-	for (std::vector<function_token>::iterator itr = symbol_table.functions.begin(); itr != symbol_table.functions.end(); itr++)
-	{
-		std::cout << "|name| " << itr->name << " |stack space needed| " << itr->stack_space_needed << " |id| " << itr->id << "\n";
-	}
+
+	for (function_token current_function: symbol_table.functions)
+		std::cout << "|name| " << current_function.name
+		<< " |stack space needed| " << current_function.stack_space_needed
+		<< " |id| " << current_function.id << "\n";
 }

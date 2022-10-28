@@ -6,66 +6,106 @@
 #include<stack>
 #include<string>
 #include<vartypes.hpp>
-#include<symbol_table.hpp>
+#include<symboltable.hpp>
 #include<main.hpp>
 #include<intermediate/postprocessor.hpp>
 #include<debug.hpp>
+#include<operanddefinition.hpp>
 
-/*inline char_operators_into_inter()
+static std::vector<inter> inter_output;
+static std::stack<operand::operand_def> operand_stack;
+
+// This function turns single char operations into their intermediate form
+// Returns true if it added something
+inline bool single_char_operators_into_inter(i8 operator_char)
 {
+	switch(operator_char)
+	{
+	case '!': 
+		inter_output.push_back(inter(NOT, 0, ""));
+		break;
+	case '@':
+		inter_output.push_back(inter(GET, 0, ""));
+		break;
+	case '%':
+		inter_output.push_back(inter(MEM_ADDRS, 0, ""));
+		break;
+	case '&':
+		inter_output.push_back(inter(AND, 0, ""));
+		break;
+	case '|':
+		inter_output.push_back(inter(OR, 0, ""));
+		break;
+	case '^':
+		inter_output.push_back(inter(XOR, 0, ""));
+		break;
+	case '=':
+		inter_output.push_back(inter(EQUAL, 0, ""));
+		break;
+	case '<':
+		inter_output.push_back(inter(LESS, 0, ""));
+		break;
+	case '>':
+		inter_output.push_back(inter(GREATER, 0, ""));
+		break;
+	case '+':
+		inter_output.push_back(inter(ADD, 0, ""));
+		break;
+	case '-':
+		inter_output.push_back(inter(SUB, 0, ""));
+		break;
+	case '/':
+		inter_output.push_back(inter(DIV, 0, ""));
+		break;
+	case '*': 
+		inter_output.push_back(inter(MUL, 0, ""));
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
 
-}*/
-
-// TODO: We don't need to be returning the intermediate anymore since we are passing a refrence to the outputed intermediate
-// This turns a single set of select tokens into their intermediate form
-inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_output, int rpn_size, int current_owner, int &current_stack)
+// This handles turning operators into their intermediate repersentation
+// Returns true if it added something
+inline bool operators_into_inter(std::string *token_itr)
 {
-	if (*itr == "!") 
-		return inter(NOT, 0, "");
-	if (*itr == "@") 
-		return inter(GET, 0, "");
-	if (*itr == "%")
-		return inter(MEM_ADDRS, 0, "");
-	if (*itr == "++")
-		return inter(INCRAMENT, 0, "");
-	if (*itr == "--")
-		return inter(DECRAMENT, 0, "");
-	if (*itr == "&")
-		return inter(AND, 0, "");
-	if (*itr == "|")
-		return inter(OR, 0, "");
-	if (*itr == "^")
-		return inter(XOR, 0, "");
-	if (*itr == "<<")
-		return inter(LSL, 0, "");
-	if (*itr == ">>")
-		return inter(LSR, 0, "");
-	if (*itr == "=")
-		return inter(EQUAL, 0, "");
-	if (*itr == "==")
-		return inter(IS_EQUAL, 0, "");
-	if (*itr == "<")
-		return inter(LESS, 0, "");
-	if (*itr == "<=")
-		return inter(LESS_EQUAL, 0, "");
-	if (*itr == ">")
-		return inter(GREATER, 0, "");
-	if (*itr == ">=")
-		return inter(GREATER_EQUAL, 0, "");
-	if (*itr == "+")
-		return inter(ADD, 0, "");
-	if (*itr == "-")
-		return inter(SUB, 0, "");
-	if (*itr == "/")
-		return inter(DIV, 0, "");
-	if (*itr == "*") 
-		return inter(MUL, 0, "");
-	if (*itr == "return")
+	if (single_char_operators_into_inter((*token_itr)[0]))
+		return true;
+
+	u32 tmp = inter_output.size();
+
+	if (*token_itr == "<<")
+		inter_output.push_back(inter(LSL, 0, ""));
+	if (*token_itr == ">>")
+		inter_output.push_back(inter(LSR, 0, ""));
+	if (*token_itr == "==")
+		inter_output.push_back(inter(IS_EQUAL, 0, ""));
+	if (*token_itr == "<=")
+		inter_output.push_back(inter(LESS_EQUAL, 0, ""));
+	if (*token_itr == "++")
+		inter_output.push_back(inter(INCRAMENT, 0, ""));
+	if (*token_itr == "--")
+		inter_output.push_back(inter(DECRAMENT, 0, ""));
+	if (*token_itr == "return")
 		inter_output.push_back(inter(RETURN, 0, ""));
-	if (*itr == "break")
+	if (*token_itr == "break")
 		inter_output.push_back(inter(BREAK, 0, ""));
-	if (*itr == "continue")
+	if (*token_itr == "continue")
 		inter_output.push_back(inter(CONTINUE, 0, ""));
+	if (*token_itr == ">=")
+		inter_output.push_back(inter(GREATER_EQUAL, 0, ""));
+
+	if (inter_output.size() == tmp)
+		return false;
+	return true;
+}
+
+// This turns a single set of select tokens into their intermediate form
+inline void single_into_inter(std::string *itr, i32 rpn_size, i32 current_owner, i32 &current_stack)
+{
+	if (operators_into_inter(itr))
+		return;
 
 	// This checks if the string is a valid variable
 	if (is_str_letters(*itr))
@@ -76,48 +116,60 @@ inline inter single_into_inter(std::string *itr, std::vector<inter> &inter_outpu
 		if (inter_output.size() && inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
 		{
 			if (rpn_size)
-				std::cout << "There must be nothing on the RPN stack to define a variable.\n"; exit(-1);
+			{
+				std::cout << "There must be nothing on the RPN stack to define a variable.\n"; 
+				exit(-1);
+			}
 
 			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
 
 			//add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 			add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 
-			return inter(VARIABLE_DECLERATION, 0, *itr, get_variable_token(*itr));
+			inter_output.push_back(inter(VARIABLE_DECLERATION, 0, *itr, get_variable_token(*itr)));
 		}
 
 		// We check if the variable is in the symbol table, if not we send an error
 		if (!get_variable_token(*itr))
-			std::cout << "Unknown variable: " << *itr << ".\n"; exit(-1);
+		{
+			std::cout << "Unknown variable: " << *itr << ".\n";
+			exit(-1);
+		}
 
-		return inter(VARIABLE_ACCESS, 0, *itr, get_variable_token(*itr));
+		inter_output.push_back(inter(VARIABLE_ACCESS, 0, *itr, get_variable_token(*itr)));
+		return;
 	}
 
 	// This checks if it's a type
 	if (is_type(*itr) != -1)
 	{
-		return inter(VARIABLE_TYPE, 0, *itr);
+		inter_output.push_back(inter(VARIABLE_TYPE, 0, *itr));
 		// If we have a type we need to make the last token into this type
 			// If the last token is a variable name offload the type decleration to the symbol table
 			// If the last token is a constant just set the first char of the string to the type's id
+		return;
 	}
+
 	std::cout << "Unknown token: " << *itr << ".\n";
 	exit(-1);
 }
+
 // This turns a file into a series of inters
 std::vector<inter> file_into_inter(std::vector<std::string> file)
 {
 	// TODO: All errors should show what they got instead of just what they expected
 	std::stack<inter> statment_stack;
-	std::vector<inter> inter_output;
 	// TODO: Intermediate should only be operating on two values at a time to make optimizations faster
-	int rpn_size = 0;
-	int current_owner = -1; // If there is a variable defintion this will be the value of the owner
-	int current_stack = 0; // The current stack location
+	i32 rpn_size = 0;
+	i32 current_owner = -1; // If there is a variable defintion this will be the value of the owner
+	i32 current_stack = 0; // The current stack location
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
 		if (rpn_size < 0)
-			std::cout << "RPN stack size fell below zero.\n"; exit(-1);
+		{
+			std::cout << "RPN stack size fell below zero.\n"; 
+			exit(-1);
+		}
 
 		// If we are doing postprocessing
 		if (*itr == "#")
@@ -196,7 +248,11 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 			inter_output.push_back(inter(IF_BEGIN, 0, ""));
 			statment_stack.push(inter(IF_END, 0, ""));
 			itr++;
-			if (*(itr) != "{") { std::cout << "Expected '{' after an if statment.\n"; exit(-1); }
+			if (*(itr) != "{") 
+			{ 
+				std::cout << "Expected '{' after an if statment.\n"; 
+				exit(-1); 
+			}
 			rpn_size--;
 			continue;
 		}
@@ -205,12 +261,18 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 		if (*itr == "else")
 		{
 			if (inter_output[inter_output.size()-1].id != IF_END)
-				std::cout << "Expected an end to an if statment before an else statment.\n"; exit(-1); 
+			{
+				std::cout << "Expected an end to an if statment before an else statment.\n"; 
+				exit(-1);
+			}
 
 			itr++;
 
 			if (*(itr) != "{" && *(itr) != "if")
-				std::cout << "Expected '{' or if statment after else statment.\n"; exit(-1);
+			{
+				std::cout << "Expected '{' or if statment after else statment.\n"; 
+				exit(-1);
+			}
 
 			inter_output.push_back(inter(ELSE_BEGIN, 0, ""));
 			statment_stack.push(inter(ELSE_END, 0, ""));
@@ -242,39 +304,47 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 				std::cout << "Function defintion inside another function is not valid.\n"; 
 				exit(-1); 
 			}
+
 			if(rpn_size)
 			{ 
 				std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; 
 				exit(-1); 
 			}
+
 			itr++;
 			std::string name = (*itr).substr(0, (*itr).find('(') );
-			// This checks for a lot of possible errors
+
 			if(!is_str_letters(name)) 
 			{ 
 				std::cout << "The function name: " << name << " contains invalid characters.\n"; 
 				exit(-1); 
 			}
+
 			if(get_function_token(name)) 
 			{ 
 				std::cout << "The function name: " << name << " is already used.\n"; 
 				exit(-1); 
 			}
+
 			if(!is_valid_name(name)) 
 			{ 
 				std::cout << "The function name: " << name << " isn't valid.\n"; 
 				exit(-1); 
 			}
+
 			add_function_token(name);
 			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
 			// This reads through the input variables of the function
-			unsigned char current_type = 0; // The type of the current variable
-			int stack_space_needed = 0; // The stack space needed for all the input variables to the function
+			u8 current_type = 0; // The type of the current variable
+			i32 stack_space_needed = 0; // The stack space needed for all the input variables to the function
 			// TODO: Input variables shouldn't use stack space by default, registers would be a lot better
 			while (true)
 			{
 				if (itr == file.end())
-					std::cout << "Error while parsing function defintion: reached end of file.\n"; exit(-1);
+				{
+					std::cout << "Error while parsing function defintion: reached end of file.\n"; 
+					exit(-1);
+				}
 
 				std::string token = *itr;
 
@@ -285,7 +355,10 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 
 				// TODO: Add default varaible assignment
 				if (token == "=")
-					std::cout << "Default function input variable assignemt has not yet been added.\n"; exit(-1);
+				{
+					std::cout << "Default function input variable assignemt has not yet been added.\n"; 
+					exit(-1);
+				}
 
 				if (current_type)
 				{
@@ -314,13 +387,16 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 			std::cout << *itr << "\n";
 
 			if (*(itr) != "{")
-				std::cout << "Expected '{' after a function defintion.\n"; exit(-1);
+			{
+				std::cout << "Expected '{' after a function defintion.\n"; 
+				exit(-1);
+			}
 
 			continue;
 		}
 
 		// This turns any remaining tokens into their intermediate forms
-		inter_output.push_back(single_into_inter(&(*itr),inter_output,rpn_size,current_owner,current_stack));
+		single_into_inter(&(*itr),rpn_size,current_owner,current_stack);
 
 		// Updating the size of the RPN stack
 		if (inter_output[inter_output.size()-1].id == EQUAL)
@@ -334,7 +410,10 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 	}
 
 	if (statment_stack.size())
-		std::cout << "Expected all statments to be closed before the end of the file.\n"; exit(-1);
+	{
+		std::cout << "Expected all statments to be closed before the end of the file.\n"; 
+		exit(-1);
+	}
 
 	#if DEBUG
 		for (inter _inter : inter_output)

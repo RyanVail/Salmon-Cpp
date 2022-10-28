@@ -4,8 +4,8 @@
 #include <stack>
 #include <vector>
 #include <intermediate/intermediate.hpp>
-#include <symbol_table.hpp>
-#include <asm/value_asm.hpp>
+#include <symboltable.hpp>
+#include <operanddefinition.hpp>
 
 // TODO: Branchpoints should be caps
 
@@ -43,12 +43,12 @@ namespace aarch32_asm
 
     struct statment_defintion
     {
-        unsigned char type = 255;
+        u8 type = 255;
         std::string name = "";
-        statment_defintion(unsigned char _type, std::string _name) : type(_type), name(_name){};
+        statment_defintion(u8 _type, std::string _name) : type(_type), name(_name) {};
     };
 
-    value_asm::value_defintion value_in_r0 = value_asm::value_defintion(0, 0, 0, 0);
+    operand::operand_def value_in_r0 = operand::operand_def(0, 0, 0, 0);
 
     // This either adds asm to "asm_file" or the top function in "asm_functions" based on "in_func"
     void add_asm(bool in_func, std::string asm_to_add, std::vector<std::string> &asm_file, std::vector<std::string> &asm_functions)
@@ -60,7 +60,7 @@ namespace aarch32_asm
     }
 
     // This turns a value defintion into its asm
-    std::string value_into_asm(value_asm::value_defintion &current_def, int _register)
+    std::string value_into_asm(operand::operand_def &current_def, i32 _register)
     {
         // If we are defining a const
         if (current_def.accessed_variable == nullptr && current_def.called_function == nullptr)
@@ -88,7 +88,7 @@ namespace aarch32_asm
     }
 
     // This function does a lot of the repetive asm from intermediate
-    void single_intermediate_into_asm(inter current_inter, std::stack<value_asm::value_defintion> &rpn_stack, std::stack<statment_defintion> &statment_stack, bool in_func, std::vector<std::string> &asm_functions, std::vector<std::string> &asm_file)
+    void single_intermediate_into_asm(inter current_inter, std::stack<operand::operand_def> &rpn_stack, std::stack<statment_defintion> &statment_stack, bool in_func, std::vector<std::string> &asm_functions, std::vector<std::string> &asm_file)
     {
         // This is done in the hopes it is stored in a register but I might be useless
         unsigned char current_inter_id = current_inter.id;
@@ -161,8 +161,7 @@ namespace aarch32_asm
                 add_asm(in_func,
                         "STR R0, [SP,#" +
                             std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
-                            "]" +
-                            std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                            "]",
                         asm_file, asm_functions);
 
             // If variable is 8 bit
@@ -170,8 +169,7 @@ namespace aarch32_asm
                 add_asm(in_func,
                         "STRB R0, [SP,#" +
                             std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
-                            "]" +
-                            std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                            "]",
                         asm_file, asm_functions);
 
             else
@@ -181,7 +179,7 @@ namespace aarch32_asm
             }
 
             rpn_stack.pop();
-            value_in_r0 = value_asm::value_defintion(0, 0, 0, 0);
+            value_in_r0 = operand::operand_def(0, 0, 0, 0);
             return;
         }
 
@@ -258,27 +256,31 @@ namespace aarch32_asm
         // ^^^ Currently not used
         // TODO: These variables should all be static to make inline function calls simpler
         std::vector<std::string> asm_file = {".ASM\n.GLOBAL fn_main\n.TEXT\nfn_end:\nMOV R7, #1\nSWI 0\nfn_main:\nSUB SP, #" + std::to_string(get_stack_space_needed(-1))};
-        std::stack<value_asm::value_defintion> rpn_stack;
+        std::stack<operand::operand_def> rpn_stack;
         std::stack<statment_defintion> statment_stack; // 0 -> function call, 1 -> while, 2 -> if, 3 -> return, 4 -> break, 5-> continue
-        unsigned int current_statment_id = 0;          // This is just a little bit of padding added to the end of branch points to make sure they are seperate                          ^^^^^^^^^^^^^
+        u32 current_statment_id = 0;          // This is just a little bit of padding added to the end of branch points to make sure they are seperate                          ^^^^^^^^^^^^^
         bool in_func = 0;                              // If we are inside a function ie. if we are adding the asm to asm_file or asm_functions
-        unsigned char current_inter_id;                // The current intermediate's id hopefully in a register
+        u8 current_inter_id;                // The current intermediate's id hopefully in a register
         for (inter current_inter : inter_file)
         {
             // TODO: This should track owner and it should only get variables that are local to that owner (and owenr)
             current_inter_id = current_inter.id;
             single_intermediate_into_asm(current_inter, rpn_stack, statment_stack, in_func, asm_functions, asm_file);
+            
+            // Some values that are used in the switch statment
+            i32 current_register = 0;
+            function_token *current_function;
             switch(current_inter_id)
             {
                 case VARIABLE_DECLERATION:
-                    rpn_stack.push(value_asm::value_defintion(1, current_inter.refrenced_variable_token, 0, 0));
+                    rpn_stack.push(operand::operand_def(1, current_inter.refrenced_variable_token, 0, 0));
                     break;
                 case CONST:
-                    rpn_stack.push(value_asm::value_defintion(current_inter.value, 0, 0, 0));
+                    rpn_stack.push(operand::operand_def(current_inter.value, 0, 0, 0));
                     break;
                 case VARIABLE_ACCESS:
                     // TODO: This should go back and find the "VARIABLE_TYPE" token since it isn't set in "intermediate.cpp" or do it in "intermediate.cpp"
-                    rpn_stack.push(value_asm::value_defintion(0, current_inter.refrenced_variable_token, 0, get_variable_token(current_inter.refrenced_name)->type));
+                    rpn_stack.push(operand::operand_def(0, current_inter.refrenced_variable_token, 0, get_variable_token(current_inter.refrenced_name)->type));
                     break;
                 case WHILE_BEGIN:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
@@ -293,7 +295,7 @@ namespace aarch32_asm
                             add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
                             rpn_stack.pop();
                         }
-                        value_in_r0 = value_asm::value_defintion(0, 0, 0, 0);
+                        value_in_r0 = operand::operand_def(0, 0, 0, 0);
                     }
                     statment_stack.push(statment_defintion(1, std::to_string(current_statment_id)));
                     add_asm(in_func,
@@ -317,7 +319,7 @@ namespace aarch32_asm
                             add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
                             rpn_stack.pop();
                         }
-                        value_in_r0 = value_asm::value_defintion(0, 0, 0, 0);
+                        value_in_r0 = operand::operand_def(0, 0, 0, 0);
                     }
                     add_asm(in_func,
                             "CMP R0, #0\nBLE if_" +
@@ -330,7 +332,7 @@ namespace aarch32_asm
                     rpn_stack = {};
                     // TODO: This should scale based on the # of registers used
                     add_asm(in_func, RESET_RPN_ASM_NORMAL, asm_file, asm_functions);
-                    value_in_r0 = value_asm::value_defintion(0, 0, 0, 0);
+                    value_in_r0 = operand::operand_def(0, 0, 0, 0);
                 case IF_END:
                     add_asm(in_func, statment_stack.top().name, asm_file, asm_functions);
                     statment_stack.pop();
@@ -362,7 +364,7 @@ namespace aarch32_asm
                     in_func = false;
                     break;
                 case FUNC_CALL:
-                    function_token *current_function = get_function_token(current_inter.refrenced_name);
+                    current_function = get_function_token(current_inter.refrenced_name);
                     if (!current_function)
                     {
                         std::cout << "Known function: " << current_inter.refrenced_name << "\n";
@@ -373,7 +375,7 @@ namespace aarch32_asm
                         std::cout << "Error: The function " << current_inter.refrenced_name << " takes more than eight values which is not valid.\n";
                         exit(-1);
                     }
-                    int current_register = 0; // The current register we are offloading the inputs of the function into
+                    current_register = 0; // The current register we are offloading the inputs of the function into
                     // This offloads the needed values as input from the stack into the registers
                     for (variable_token current_variable : current_function->inputs)
                     {
@@ -471,7 +473,7 @@ namespace aarch32_asm
                                         std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
                                     asm_file, asm_functions);
                         }
-                        // else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }
+                        //else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }
                     }
                     break;
             }

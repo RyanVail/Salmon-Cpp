@@ -4,6 +4,8 @@
 #include<vector>
 #include<string>
 #include<intermediate/intermediate.hpp>
+#include<typedefs.hpp>
+
 namespace aarch32_asm 
 {
     // TODO: This should contain the structs that are used by "aarch32_asm.cpp"

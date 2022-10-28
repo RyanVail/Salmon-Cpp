@@ -3,17 +3,20 @@
 
 #include<vector>
 #include<string>
-#include<symbol_table.hpp>
+#include<symboltable.hpp>
+#include<typedefs.hpp>
+
+// This struct is a value definition
 
 // This struct defines a single intermediate instruction
 struct inter
 {
-	int id; // This is the id/type of the intermediate token
-	int value; // This is a value or variable type id
+	i32 id; // This is the id/type of the intermediate token
+	i32 value; // This is a value or variable type id
 	std::string refrenced_name; // This is the name of the function or variable that is refrenced
 	variable_token* refrenced_variable_token; // The refrenced variable token if there is one
-	inter(unsigned char id_value, int value_value, std::string refrenced_name_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value) {};
-	inter(unsigned char id_value, int value_value, std::string refrenced_name_value, variable_token* refrenced_variable_token_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value), refrenced_variable_token(refrenced_variable_token_value) {};
+	inter(u8 id_value, i32 value_value, std::string refrenced_name_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value) {};
+	inter(u8 id_value, i32 value_value, std::string refrenced_name_value, variable_token* refrenced_variable_token_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value), refrenced_variable_token(refrenced_variable_token_value) {};
 };
 
 // The below comments were made with a tab size of four

@@ -28,7 +28,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
         3 2 1 + -
         ```
 - ### Semicolons
-    - Semicolons will clear the current stack
+    - Semicolons will remove every operand before it
         ```
         1 2 ;
         ```

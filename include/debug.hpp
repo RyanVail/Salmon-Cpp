@@ -2,6 +2,7 @@
 #define DEBUG_HPP
 
 #include<intermediate/intermediate.hpp>
+#include<typedefs.hpp>
 
 // This takes in a intermediate id and prints the id
 void print_inter(inter to_print);

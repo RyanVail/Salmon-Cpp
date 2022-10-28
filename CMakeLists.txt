@@ -10,11 +10,12 @@ project(Salmon)
 include_directories(include)
 
 add_executable(Salmon
-	src/symbol_table.cpp
+	src/intermediate/typechecker.cpp
+	src/symboltable.cpp
 	src/debug.cpp
 	src/vartypes.cpp
 	src/intermediate/intermediate.cpp
 	src/main.cpp
 	src/intermediate/postprocessor.cpp
 	src/asm/aarch32_asm.cpp
-) # ^^^^^^^^^^^^^^^^^^^^^^^ These should change based on the compilation target
+)

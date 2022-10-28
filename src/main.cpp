@@ -8,11 +8,11 @@
 
 #include"tokenizer.cpp"
 #include<vartypes.hpp>
-#include<symbol_table.hpp>
+#include<symboltable.hpp>
 #include<intermediate/intermediate.hpp>
 #include<asm/aarch32_asm.hpp>
 
-const std::string help_message = "Usage: salmonc [options] file...\n\nOptions:\n\t-h\t--help\t\tDisplays help\n";
+const std::string help_message = "Usage: salmon [options] file...\n\nOptions:\n\t-h\t--help\t\tDisplays help\n";
 
 #if DEBUG
 	#include<debug.hpp>
@@ -43,18 +43,22 @@ std::vector<std::string> load_file(std::string file_name)
 	}
 }
 
-// This takes arguments
-int main(int argc, char *argv[])
+// This function processes command line options
+std::string process_options(i32 argc, char *argv[])
 {
 	std::string file_name;
-	for (int i=1; i < argc; i++)
+	for (i32 i=1; i < argc; i++)
 	{
 		if (argv[i][0] == '-' && argv[i][1] == '-')
 		{
 			if (argv[i] == std::string("--help"))
-				std::cout << help_message; exit(1);
+			{
+				std::cout << help_message; 
+				exit(1);
+			}
 
-			std::cout << "Unknown option: " << argv[i] << "\n"; exit(-1);
+			std::cout << "Unknown option: " << argv[i] << "\n";
+			exit(-1);
 		}
 		else if (argv[i][0] == '-')
 		{
@@ -64,20 +68,34 @@ int main(int argc, char *argv[])
 				std::cout << help_message; exit(1);
 				break;
 			default:
-				std::cout << "Unknown option: " << argv[i] << "\n"; exit(-1);
+				std::cout << "Unknown option: " << argv[i] << "\n"; 
+				exit(-1);
 			}
 		}
 		else 
 		{
 			if (file_name != "")
-				std::cout << "Expected one file name but got multiple.\n"; exit(-1);
+			{
+				std::cout << "Expected one file name but got multiple.\n"; 
+				exit(-1);
+			}
 
 			file_name = argv[i];
 		}
 	}
+	return file_name;
+}
+
+// This takes arguments
+i32 main(i32 argc, char *argv[])
+{
+	std::string file_name = process_options(std::move(argc), std::move(argv));
 
 	if (file_name == "")
-		std::cout << "Please enter a file name to compile or use -h to display help.\n"; exit(-1);
+	{
+		std::cout << "Please enter a file name to compile or use -h to display help.\n"; 
+		exit(-1);
+	}
 
 	std::cout << "Compiling file " << file_name << " with " << VERSION << "...\n\n";
 

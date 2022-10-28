@@ -3,6 +3,7 @@
 #include<string>
 #include<vector>
 #include<intermediate/intermediate.hpp>
+#include<typedefs.hpp>
 
 namespace postprocessor
 {

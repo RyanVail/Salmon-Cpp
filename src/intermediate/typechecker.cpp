@@ -30,7 +30,7 @@ namespace typechecker
 {
     // Can turn "type_a" into "type_b"
     // 0 -> can be transformed 1 -> cannot be transformed without explicit transform 2-> can't be at all
-    unsigned char can_be_converted_to(unsigned char type_a, unsigned char type_b)
+    u8 can_be_converted_to(u8 type_a, u8 type_b)
     {
         // If one of these types is signed and the other isn't or "type_b" has more bits than "type_a"
         if (type_a & 1 != type_a & 1 || type_a > type_b)

@@ -7,18 +7,18 @@
 #include<iostream>
 
 #define blank_characters_len 4
-const char blank_characters[] = { '\n', '\r', '\t', ' ' };
+const i8 blank_characters[] = { '\n', '\r', '\t', ' ' };
 #define special_characters_len 16
 // TODO: The lengths don't need to be constants
 // Old special chars
 // const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
-const char special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@', '#' };
+const i8 special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@', '#' };
 
 // Returns true if a character is a blank otherwise false
 bool is_blank(char &character)
 {
 	// TODO: Find out if GCC unravels this at O3
-	for (int current_blank=0; current_blank < blank_characters_len; current_blank++)
+	for (i32 current_blank=0; current_blank < blank_characters_len; current_blank++)
 		if (blank_characters[current_blank] == character)
 			return true;
 
@@ -28,7 +28,7 @@ bool is_blank(char &character)
 // Returns true if a character is special otherwise false
 bool is_special(char &character)
 {
-	for (int current_special=0; current_special < special_characters_len; current_special++)
+	for (i32 current_special=0; current_special < special_characters_len; current_special++)
 		if (special_characters[current_special] == character)
 			return true;
 
@@ -39,7 +39,7 @@ bool is_special(char &character)
 std::vector<std::string> file_into_tokens(std::vector<std::string> file_contents)
 {
 	std::vector<std::string> formated_file; // Each string is another token
-	int comments = 0; // The # of comments we are insde if any
+	i32 comments = 0; // The # of comments we are insde if any
 	// This goes over every string in the file
 	for (std::string current_string : file_contents)
 	{
