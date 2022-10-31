@@ -1,6 +1,6 @@
 /* This does type checking during the tokens to intermediate phase */
 
-#include<typechecker.hpp>
+#include<intermediate/typechecker.hpp>
 #include<vartypes.hpp>
 #include<iostream>
 #include<typedefs.hpp>
@@ -41,15 +41,11 @@ namespace typechecker
     u8 get_type_of_inter(inter _inter)
     {
         if (_inter.id == CONST)
-            return _inter.refrenced_name[0];
-
+            return _inter.type;
         if (_inter.id == FUNC_CALL)
-            return get_function_token(_inter.refrenced_variable_token)->output;
-
+            return _inter.func->output;
         if (_inter.id == VARIABLE_ACCESS)
-        {
-            return get_variable_token(_inter.refrenced_variable_token)->type;
-        }
+            return _inter.var->type;
 
     }
 

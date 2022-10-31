@@ -48,8 +48,8 @@ namespace postprocessor
             // We incrament the iterator twice to go over "!asm"
             itr += 2;
 
-            // We save the outputed asm into the "refrenced_name" of an "ASM" intermediate
-            postprocessor_add_inter((inter(ASM, 0, output_asm)));
+            // TODO: We need to store the outputed asm somewhere
+            // postprocessor_add_inter((inter(ASM, 0, output_asm)));
         }
     }
 

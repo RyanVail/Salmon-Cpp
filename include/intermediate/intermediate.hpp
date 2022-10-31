@@ -9,14 +9,17 @@
 // This struct is a value definition
 
 // This struct defines a single intermediate instruction
+// TODO: "value" should somehow suport larger nums
 struct inter
 {
-	i32 id; // This is the id/type of the intermediate token
-	i32 value; // This is a value or variable type id
-	std::string refrenced_name; // This is the name of the function or variable that is refrenced
-	variable_token* refrenced_variable_token; // The refrenced variable token if there is one
-	inter(u8 id_value, i32 value_value, std::string refrenced_name_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value) {};
-	inter(u8 id_value, i32 value_value, std::string refrenced_name_value, variable_token* refrenced_variable_token_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value), refrenced_variable_token(refrenced_variable_token_value) {};
+	u8 id; // This is the id/type of the intermediate token
+	u8 type; // This is the type of the value if it's a constant
+	i32 value; // This is a value of the inter if it's a constant
+	variable_token* var; // This is the variable token that is refrenced if it was
+	function_token* func; // This is the function token that is refrenced if it was
+	inter(u8 _id, variable_token* _var) : id(_id), var(_var) {};
+	inter(u8 _id, function_token* _func) : id(_id), func(_func) {};
+	inter(u8 _id, i32 _value, u8 _type) : id(_id), value(_value), type(_type) {};
 };
 
 void postprocessor_add_inter(inter _inter);

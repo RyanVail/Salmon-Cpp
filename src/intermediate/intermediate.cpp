@@ -44,14 +44,17 @@ inline void add_function_call_operand(function_token *to_add)
 }
 
 // There should be another "add_inter" function that takes in an inter that is used when we offload statment stack
-inline void add_inter(i32 _const, variable_token *_var, function_token *_func)
+inline void add_inter(u8 _id, i32 _const, variable_token *_var, function_token *_func)
 {
-	inter_output.push_back(inter(_const, _var, _func));
+	if (_var)
+		inter_output.push_back(inter(_id, _var));
+	else
+		inter_output.push_back(inter(_id, _func));
 }
 
-inline void add_statment(u32 _const, variable_token *_var, function_token *_func)
+inline void add_statment(u8, _id, i32 _const, variable_token *_var, function_token *_func)
 {
-	statment_stack.push(inter(_const, _var, _func));
+	statment_stack.push(inter(_id, _func));
 }
 
 // This takes the top operand off and generates its intermediate repersentation
@@ -59,7 +62,7 @@ void top_operand_to_inter()
 {
 	operand::operand_def top_operand = operand_stack.top()
 
-	u8 _type = top_opearnd.refrenced_name[0];
+	u8 _type = top_opearnd.refrenced_name;
 	
 	if (!top_operand.accessed_variable && !top_operand.called_function)
 		add_inter(CONST, top_operand.const_value, _type);
@@ -309,15 +312,16 @@ inline void function_call_into_inter(std::string *token_itr)
 }
 
 // Returns true if it added something
-inline bool statment_into_inter(std::String *token_itr)
+inline bool statment_into_inter(std::string *token_itr)
 {
 	if (*token_itr == "if")
 	{
 		add_inter(IF_BEGIN, 0, "");
-		add_statmen(IF_END, 0, "");
+		add_statment(IF_END, 0, "");
 		token_itr++;
 		if (*(token_itr) != "{") 
 			error::send_error("Expected '{' after an if statment.\n");
+		
 		rpn_size--;
 		return true;
 	}
@@ -358,12 +362,9 @@ inline bool statment_into_inter(std::String *token_itr)
 			if (rpn_size)
 				error::send_error("There must be no operands before defining a variable.\n");
 
-			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
+			current_stack -= types_size[inter_output[inter_output.size()-1].type];
 
-			//add_variable_token(*token_itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
-			add_variable_token(*token_itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
-
-			add_inter(VARIABLE_DECLERATION, 0, *token_itr, get_variable_token(*token_itr));
+			add_inter(VARIABLE_DECLERATION, 0 ,get_variable_token(*token_itr), 0);
 		}
 
 		// We check if the variable is in the symbol table, if not we send an error
