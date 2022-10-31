@@ -19,6 +19,13 @@ struct inter
 	inter(u8 id_value, i32 value_value, std::string refrenced_name_value, variable_token* refrenced_variable_token_value) : id(id_value), value(value_value), refrenced_name(refrenced_name_value), refrenced_variable_token(refrenced_variable_token_value) {};
 };
 
+void postprocessor_add_inter(inter _inter);
+
+// TODO: "VARIABLE_TYPE" should be called "TYPE"
+// I know that using #defines may be clunky and result in all of unintential 
+// bugs, but I think it's preferable to enums because the code is clearner.
+// Excluding the #undefs.
+//
 // The below comments were made with a tab size of four
 // These are the intermediate instructions types/ids
 #define VARIABLE_TYPE 0

@@ -11,6 +11,7 @@
 #include<symboltable.hpp>
 #include<intermediate/intermediate.hpp>
 #include<asm/aarch32_asm.hpp>
+#include<error.hpp>
 
 const std::string help_message = "Usage: salmon [options] file...\n\nOptions:\n\t-h\t--help\t\tDisplays help\n";
 
@@ -33,10 +34,8 @@ std::vector<std::string> load_file(std::string file_name)
 		if (file_line == "") 
 		{ 
 			if (file_contents.size() <= 0) 
-			{ 
-				std::cout << "Something went wrong while reading the file.\n"; 
-				exit(-1); 
-			}
+				error::send_error("Something went wrong while reading the file.\n");
+
 			return file_contents;
 		}
 		file_contents.push_back(file_line);
@@ -57,8 +56,7 @@ std::string process_options(i32 argc, char *argv[])
 				exit(1);
 			}
 
-			std::cout << "Unknown option: " << argv[i] << "\n";
-			exit(-1);
+			error::send_error("Unknown option: " + argv[i] + "\n");
 		}
 		else if (argv[i][0] == '-')
 		{
@@ -68,17 +66,13 @@ std::string process_options(i32 argc, char *argv[])
 				std::cout << help_message; exit(1);
 				break;
 			default:
-				std::cout << "Unknown option: " << argv[i] << "\n"; 
-				exit(-1);
+				error::send_error("Unknown option: " + argv[i] + "\n");	
 			}
 		}
 		else 
 		{
 			if (file_name != "")
-			{
-				std::cout << "Expected one file name but got multiple.\n"; 
-				exit(-1);
-			}
+				error::send_error("Expected one file name but got multiple.\n");
 
 			file_name = argv[i];
 		}
@@ -92,10 +86,7 @@ i32 main(i32 argc, char *argv[])
 	std::string file_name = process_options(std::move(argc), std::move(argv));
 
 	if (file_name == "")
-	{
-		std::cout << "Please enter a file name to compile or use -h to display help.\n"; 
-		exit(-1);
-	}
+		error::send_error("Please enter a file name to compile or use -h to display help.\n");
 
 	std::cout << "Compiling file " << file_name << " with " << VERSION << "...\n\n";
 
@@ -111,7 +102,7 @@ i32 main(i32 argc, char *argv[])
 	if (compilation_target == AARCH32_COMPILATION_TARGET) 
 		output_asm = aarch32_asm::intermediates_into_asm(inter_file);
 	else
-		std::cout << "Error while choosing compilation target.\n"; exit(-1);
+		error::send_error("Error while choosing compilation target.\n");
 
 	for (std::string current_asm : output_asm)
 		std::cout << current_asm << "\n";

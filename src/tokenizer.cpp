@@ -1,7 +1,5 @@
 /* This file handles tokenizing a file making further processing a simplier job */
 
-// TODO: Some special characters shouldn't add spaces based on the new RPN system
-
 #include<vector>
 #include<string>
 #include<iostream>
@@ -10,9 +8,8 @@
 const i8 blank_characters[] = { '\n', '\r', '\t', ' ' };
 #define special_characters_len 16
 // TODO: The lengths don't need to be constants
-// Old special chars
-// const char special_characters[] = { '+', '-', '*', '/', '(', ')', '{', '}', ';', '^', '!', '&', '=', '|', '<', '>', '[', ']' };
-const i8 special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', '|', ',', '(', ')', '$', '%', '@', '#' };
+const i8 special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&', 
+                                  '|', ',', '(', ')', '$', '%', '@', '#' };
 
 // Returns true if a character is a blank otherwise false
 bool is_blank(char &character)
@@ -51,10 +48,20 @@ std::vector<std::string> file_into_tokens(std::vector<std::string> file_contents
 			char current_char = *itr;
 
 			// If we are starting a comment we incrament "comments" and skip the next '*'
-			if (*(itr+1) == '*' && current_char == '/') { comments++; itr++; continue; }
+			if (*(itr+1) == '*' && current_char == '/') 
+			{
+				comments++; 
+				itr++; 
+				continue; 
+			}
 
 			// If we are ending a comment we decrament "comments" and skip the next '/'
-			if (*(itr+1) == '/' && current_char == '*') { comments--; itr++; continue; }
+			if (*(itr+1) == '/' && current_char == '*') 
+			{ 
+				comments--;
+				itr++; 
+				continue; 
+			}
 
 			// If we are in a comment we just repeat the loop while setting "last_char" to the current char
 			if (comments)

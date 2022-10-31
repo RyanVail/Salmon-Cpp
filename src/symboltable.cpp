@@ -5,6 +5,7 @@
 #include<vector>
 #include<iostream>
 #include<vartypes.hpp>
+#include<error.hpp>
 
 // This returns a pointer to the variable token by the same name/id or a null
 // pointer.
@@ -12,8 +13,10 @@ variable_token* get_variable_token(std::string name, i32 id)
 {
 	for (variable_token &current_variable : symbol_table.variables)
 	{
-		if (id && current_variable.id == id) { return &current_variable; } 
-		if (name != "" && current_variable.name == name) { return &current_variable; }
+		if (id && current_variable.id == id)
+			return &current_variable;
+		if (name != "" && current_variable.name == name)
+			return &current_variable;
 	}
 
 	return nullptr;
@@ -77,10 +80,8 @@ void add_variable_token(std::string name, u8 type, i32 owner, i32 stack_location
 	// TODO: This should make sure it is a valid variable name
 	// TODO: This should check local variable
 	if (get_variable_token(name) != 0)
-	{
-		std::cout << "The variable name: " << name << " is already used."; 
-		exit(-1);
-	}
+		error::send_error("The variable name: " + name + " is already used.");
+
 	variable_token new_token = variable_token(name, type, owner, stack_location);
 	symbol_table.variables.push_back(new_token);
 }
@@ -103,7 +104,7 @@ void add_function_token(std::string name)
 {
 	// TODO: This should make sure it is a valid token name
 	if (get_function_token(name) != 0)
-		std::cout << "The function name: " << name << " is already used."; exit(-1);
+		error::send_error("The function name: " + name + " is already used.");
 
 	function_token new_function;
 	new_function.name = name;

@@ -11,7 +11,7 @@
 #include<intermediate/postprocessor.hpp>
 #include<debug.hpp>
 #include<operanddefinition.hpp>
-#include<error.h>
+#include<error.hpp>
 
 static std::stack<operand::operand_def> operand_stack;
 static std::stack<inter> statment_stack;
@@ -19,71 +19,123 @@ static std::vector<inter> inter_output;
 static i32 current_owner;
 static i32 current_stack;
 
+// Allows postprocessor instructions to add to the static inter_output
+void postprocessor_add_inter(inter _inter)
+{
+	inter_output.push_back(_inter);
+}
+
+// These are inline functions that improve readability a bit by abstraction
 inline void add_const_operand(u8 _type, u32 _const)
 {
 	operand_stack.push(operand::operand_def(_const, 0, 0, _type));
 }
+
 inline void add_variable_operand(variable_token *to_add)
 {
 	u8 _variable_type = to_add->type;
 	operand_stack.push(operand::operand_def(0, to_add, 0, _variable_type));
 }
+
 inline void add_function_call_operand(function_token *to_add)
 {
 	u8 _func_return_type = to_add->output;
 	operand_stack.push(operand::operand_def(0, 0, to_add, _func_return_type));
 }
 
+// There should be another "add_inter" function that takes in an inter that is used when we offload statment stack
+inline void add_inter(i32 _const, variable_token *_var, function_token *_func)
+{
+	inter_output.push_back(inter(_const, _var, _func));
+}
+
+inline void add_statment(u32 _const, variable_token *_var, function_token *_func)
+{
+	statment_stack.push(inter(_const, _var, _func));
+}
+
 // This takes the top operand off and generates its intermediate repersentation
 void top_operand_to_inter()
 {
-	// TODO: Add this
+	operand::operand_def top_operand = operand_stack.top()
+
+	u8 _type = top_opearnd.refrenced_name[0];
+	
+	if (!top_operand.accessed_variable && !top_operand.called_function)
+		add_inter(CONST, top_operand.const_value, _type);
+
+	else if (top_opearnd.accessed_variable != nullptr)
+		add_inter(VARIABLE_ACCESS, top_operand.accessed_variable, "");
+}
+
+// This takes the values needed for a function call off the operand stack
+void function_call_inter_prep(function_token &_fn)
+{	
+	if (operand_stack.size() < _fn.inputs.size())
+		error::send_error("Function call doesn't contain enough inputs.\n");
+
+	for (u32 i=0; i < _fn.inputs.size(); i++)
+	{
+		u8 _can_be = typechecker::can_be_converted_to(operand.top().final_type, _fn.inputs[i]);
+		if (_can_be)
+		{
+			std::cout << "Cannot ";
+
+			if (can_be_transformed_into(value_in_r0.final_type, current_variable.type) == 0)
+				std::cout << "explicitly ";
+
+			error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
+		}
+		top_operand_to_inter();
+	}
+
+	add_inter(FUNC_CALL, _fn.id, *itr);
 }
 
 // This function turns single char operations into their intermediate form
 // Returns true if it added something
-inline bool single_char_operators_into_inter(i8 operator_char)
+inline bool single_char_operator_into_inter(i8 operator_char)
 {
 	switch(operator_char)
 	{
 	case '!':
-		inter_output.push_back(inter(NOT, 0, ""));
+		add_inter(NOT, 0, "");
 		break;
 	case '@':
-		inter_output.push_back(inter(GET, 0, ""));
+		add_inter(GET, 0, "");
 		break;
 	case '%':
-		inter_output.push_back(inter(MEM_ADDRS, 0, ""));
+		add_inter(MEM_ADDRS, 0, "");
 		break;
 	case '&':
-		inter_output.push_back(inter(AND, 0, ""));
+		add_inter(AND, 0, "");
 		break;
 	case '|':
-		inter_output.push_back(inter(OR, 0, ""));
+		add_inter(OR, 0, "");
 		break;
 	case '^':
-		inter_output.push_back(inter(XOR, 0, ""));
+		add_inter(XOR, 0, "");
 		break;
 	case '=':
-		inter_output.push_back(inter(EQUAL, 0, ""));
+		add_inter(EQUAL, 0, "");
 		break;
 	case '<':
-		inter_output.push_back(inter(LESS, 0, ""));
+		add_inter(LESS, 0, "");
 		break;
 	case '>':
-		inter_output.push_back(inter(GREATER, 0, ""));
+		add_inter(GREATER, 0, "");
 		break;
 	case '+':
-		inter_output.push_back(inter(ADD, 0, ""));
+		add_inter(ADD, 0, "");
 		break;
 	case '-':
-		inter_output.push_back(inter(SUB, 0, ""));
+		add_inter(SUB, 0, "");
 		break;
 	case '/':
-		inter_output.push_back(inter(DIV, 0, ""));
+		add_inter(DIV, 0, "");
 		break;
 	case '*':
-		inter_output.push_back(inter(MUL, 0, ""));
+		add_inter(MUL, 0, "");
 		break;
 	default:
 		return false;
@@ -93,86 +145,241 @@ inline bool single_char_operators_into_inter(i8 operator_char)
 
 // This handles turning operators into their intermediate repersentation
 // Returns true if it added something
-inline bool operators_into_inter(std::string *token_itr)
+inline bool operator_into_inter(std::string *token_itr)
 {
-	if (single_char_operators_into_inter((*token_itr)[0]))
+	if (single_char_operator_into_inter((*token_itr)[0]))
 		return true;
 
 	u32 tmp = inter_output.size();
 
+	// Simple string operators
 	if (*token_itr == "<<")
-		inter_output.push_back(inter(LSL, 0, ""));
+		add_inter(LSL, 0, "");
 	if (*token_itr == ">>")
-		inter_output.push_back(inter(LSR, 0, ""));
+		add_inter(LSR, 0, "");
 	if (*token_itr == "==")
-		inter_output.push_back(inter(IS_EQUAL, 0, ""));
+		add_inter(IS_EQUAL, 0, "");
 	if (*token_itr == "<=")
-		inter_output.push_back(inter(LESS_EQUAL, 0, ""));
+		add_inter(LESS_EQUAL, 0, "");
 	if (*token_itr == "++")
-		inter_output.push_back(inter(INCRAMENT, 0, ""));
+		add_inter(INCRAMENT, 0, "");
 	if (*token_itr == "--")
-		inter_output.push_back(inter(DECRAMENT, 0, ""));
+		add_inter(DECRAMENT, 0, "");
 	if (*token_itr == "return")
-		inter_output.push_back(inter(RETURN, 0, ""));
+		add_inter(RETURN, 0, "");
 	if (*token_itr == "break")
-		inter_output.push_back(inter(BREAK, 0, ""));
+		add_inter(BREAK, 0, "");
 	if (*token_itr == "continue")
-		inter_output.push_back(inter(CONTINUE, 0, ""));
+		add_inter(CONTINUE, 0, "");
 	if (*token_itr == ">=")
-		inter_output.push_back(inter(GREATER_EQUAL, 0, ""));
+		add_inter(GREATER_EQUAL, 0, "");
+`
+	// Complex operators
+	if (is_type(*token_itr) != -1)
+		add_inter(VARIABLE_TYPE, 0, *itr);
 
+	// TODO: Test if this still works
+	if (*token_itr == "#")
+		postprocessor::process_instruction(file, token_itr, inter_output);
+
+	if (*token_itr == "$")
+	{
+		// itr is over the function name now
+		itr++;
+
+		if (!get_function_token(*itr))
+			error::send_error("Unknown function: " + *itr + ".\n");
+		
+		function_call_inter_prep(*get_function_token(*itr));
+
+		// Skips the next '$' if there is one
+		if (*(token_itr+1) == "$")
+			token_itr += 1;
+
+		add_function_call_operand(get_function_token(*itr));
+
+		continue;
+	}
+
+	if (*token_itr == "}")
+	{
+		if (rpn_size && statment_stack.top().id != WHILE_END)
+			error::send_error("RPN stack size should be zero before ending a statment.\n");
+		if (rpn_size >= 2) 
+			error::send_error("Expected one thing operand after ending a while statment but got: " + std::to_string(operand_stack.size()) + ".\n");
+		if (statment_stack.empty())
+			error::send_error("Unexpected '}'.\n");
+
+		inter_output.push_back(statment_stack.top());
+		statment_stack.pop();
+		continue;
+	}
+
+	if (*token_itr == ";")
+	{
+		add_inter(RESET_RPN, 0, "");
+		operand_stack = {};
+	}
+
+	if (is_str_num(*token_itr))
+		u8 type = 7;
+		if (inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
+		{
+			type = inter_output[inter_output.size()-1].type;
+		}
+		add_const_operand(type, get_str_num(*token_itr));
+	
 	if (inter_output.size() == tmp)
 		return false;
+
 	return true;
 }
 
-// This turns a single set of select tokens into their intermediate form
-inline void single_into_inter(std::string *itr, i32 rpn_size, i32 current_owner, i32 &current_stack)
+inline void function_call_into_inter(std::string *token_itr)
 {
-	if (operators_into_inter(itr))
-		return;
+	if(current_owner != -1) 
+		error::send_error("Function defintion inside another function is not valid.\n");
+	if(rpn_size)
+		error::send_error("Expected the nothing on the RPN stack before a function definiton.\n");
 
-	// This checks if the string is a valid variable
-	if (is_str_letters(*itr))
+	token_itr++;
+	std::string name = (*token_itr).substr(0, (*token_itr).find('(') );
+
+	if(!is_str_letters(name)) 
+		error::send_error("The function name: " + name + " contains invalid characters.\n");
+	if(get_function_token(name)) 
+		error::send_error("The function name: " + name + " is already used.\n");
+	if(!is_valid_name(name))
+		error::send_error("The function name: " + name + " isn't valid.\n");
+
+	add_function_token(name);
+	symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
+	// This reads through the input variables of the function
+	u8 current_type = 0; // The type of the current variable
+	i32 stack_space_needed = 0; // The stack space needed for all the input variables to the function
+	// TODO: Input variables shouldn't use stack space by default, registers would be a lot better
+	while (true)
 	{
+		if (token_itr == file.end())
+			error::send_error("Error while parsing function defintion: reached end of file.\n");
+
+		std::string token = *token_itr;
+
+		if (token == ",") 
+		{ 
+			token_itr++; 
+			continue;
+		}
+
+		if (token == ")")
+			break;
+
+		// TODO: Add default varaible assignment
+		if (token == "=")
+			error::send_error("Default function input variable assignemt has not yet been added.\n");
+
+		if (current_type)
+		{
+			// This checks if there is another variable with the same name
+			// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner
+			// TODO: This should check if the variable name is valid
+			if (get_variable_token(token)) 
+				error::send_error("A variable with that name already exists.\n");
+
+			stack_space_needed -= types_size[current_type];
+			add_variable_token(token, current_type, symbol_table.functions.size()-1, stack_space_needed);
+			current_type = 0;
+		}
+		// If this variable is the type
+		else
+			current_type = into_id(token);
+
+		token_itr++;
+	}
+
+	token_itr += 1;
+	add_inter(FUNC_BEGIN, 0, name);
+	add_statment(FUNC_END, 0, name);
+	#if DEBUG
+		std::cout << *token_itr << "\n"; // TODO: REMOVE THIS TEST LINE!
+	#endif
+
+	if (*(token_itr) != "{")
+		error::send_error("Expected '{' after a function defintion.\n");
+}
+
+// Returns true if it added something
+inline bool statment_into_inter(std::String *token_itr)
+{
+	if (*token_itr == "if")
+	{
+		add_inter(IF_BEGIN, 0, "");
+		add_statmen(IF_END, 0, "");
+		token_itr++;
+		if (*(token_itr) != "{") 
+			error::send_error("Expected '{' after an if statment.\n");
+		rpn_size--;
+		return true;
+	}
+	if (*token_itr == "else")
+	{
+		if (inter_output[inter_output.size()-1].id != IF_END)
+			error::send_error("Expected an end to an if statment before an else statment.\n");
+		
+		token_itr++;
+		
+		if (*(token_itr) != "{" && *(token_itr) != "if")
+			error::send_error("Expected '{' or if statment after else statment.\n");
+
+		add_inter(ELSE_BEGIN, 0, "");
+		add_statment(ELSE_END, 0, "");
+		return true;
+	}
+	if (*token_itr == "while")
+	{
+		add_inter(WHILE_BEGIN, 0, "");
+		add_statment(WHILE_END, 0, "");
+		token_itr++;
+
+		if (*(token_itr) != "{") 
+			error::send_error("Expected '{' after a while statment.\n");
+
+		rpn_size--;
+		return true;
+	}
+	if (is_str_letters(*token_itr))
+	{
+		// TODO: Fix this ugly mess!
 		// TODO: If the variable is in the global scope we need to add it to .data
 		// If the last intermediate token was a type we are defining a variable
 		// Otherwise we check the symbol table and assume we are accessing a variable
 		if (inter_output.size() && inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
 		{
 			if (rpn_size)
-			{
-				std::cout << "There must be nothing on the RPN stack to define a variable.\n"; 
-				exit(-1);
-			}
+				error::send_error("There must be no operands before defining a variable.\n");
 
 			current_stack -= types_size[into_id(inter_output[inter_output.size()-1].refrenced_name)];
 
-			//add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
-			add_variable_token(*itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
+			//add_variable_token(*token_itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
+			add_variable_token(*token_itr, into_id(inter_output[inter_output.size()-1].refrenced_name),current_owner,current_stack);
 
-			inter_output.push_back(inter(VARIABLE_DECLERATION, 0, *itr, get_variable_token(*itr)));
+			add_inter(VARIABLE_DECLERATION, 0, *token_itr, get_variable_token(*token_itr));
 		}
 
 		// We check if the variable is in the symbol table, if not we send an error
-		if (!get_variable_token(*itr))
-			error::send_error("Unknown variable: " + *itr + ".\n");
+		if (!get_variable_token(*token_itr))
+			error::send_error("Unknown variable: " + *token_itr + ".\n");
 
-		inter_output.push_back(inter(VARIABLE_ACCESS, 0, *itr, get_variable_token(*itr)));
-		return;
+		add_inter(VARIABLE_ACCESS, 0, *token_itr, get_variable_token(*token_itr));
+		return true;
 	}
-
-	// This checks if it's a type
-	if (is_type(*itr) != -1)
+	if (*token_itr == "fn")
 	{
-		inter_output.push_back(inter(VARIABLE_TYPE, 0, *itr));
-		// If we have a type we need to make the last token into this type
-			// If the last token is a variable name offload the type decleration to the symbol table
-			// If the last token is a constant just set the first char of the string to the type's id
-		return;
+		function_call_into_inter(token_itr);
+		return true;
 	}
 
-	error::send_error("Unknown token: " + *itr + ".\n");
+	return false;
 }
 
 // This turns a file into a series of inters
@@ -182,240 +389,17 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 	current_owner = -1;
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
-		// If we are doing postprocessing
-		if (*itr == "#")
-		{
-			postprocessor::process_instruction(file, itr, inter_output);
+		if (operator_into_inter(itr))
 			continue;
-		}
 
-		// If we have a constant
-		if (is_str_num(*itr))
-		{
-			// TODO: This assumes the type is always u32, it shouldn't do that!
-			add_const_operand(7, get_str_num(*itr));
+		if (statment_into_inter(itr))
 			continue;
-		}
 
-		// If we hit a '$' meaning function call
-		if (*itr == "$")
-		{
-			// itr is the function name now
-			itr++;
-
-			// Makes sure the function call name is valid
-			if (!get_function_token(*itr))
-				error::send_error("Unknown function: " + *itr + ".\n");
-
-			inter_output.push_back(inter(FUNC_CALL, get_function_token(*itr)->id, *itr));
-
-			rpn_size -= get_function_token(*itr)->inputs.size();
-
-			continue;
-		}
-
-		// If we hit a '}'
-		if (*itr == "}")
-		{
-			if (rpn_size && statment_stack.top().id != WHILE_END)
-				error::send_error("RPN stack size should be zero before ending a statment.\n");
-
-			if (rpn_size >= 2) 
-				error::send_error("Expected one thing operand after ending a while statment but got: " + std::to_string(operand_stack.size()) + ".\n");
-			
-			if (statment_stack.empty())
-			{
-				std::cout << "Unexpected '}'.\n"; 
-				exit(-1);
-			}
-
-			inter_output.push_back(statment_stack.top());
-			statment_stack.pop();
-			continue;
-		}
-
-		// If we hit a ';' and are defining the reset of the RPN stack
-		if (*itr == ";")
-		{
-			// If there is nothing in the stack we don't need to reset it
-			if (!rpn_size && optimization_level > 0) { continue; }
-			inter_output.push_back(inter(RESET_RPN, 0, ""));
-			rpn_size = 0;
-			continue;
-		}
-
-		// If we have an if statment
-		if (*itr == "if")
-		{
-			inter_output.push_back(inter(IF_BEGIN, 0, ""));
-			statment_stack.push(inter(IF_END, 0, ""));
-			itr++;
-			if (*(itr) != "{") 
-			{ 
-				std::cout << "Expected '{' after an if statment.\n"; 
-				exit(-1); 
-			}
-			rpn_size--;
-			continue;
-		}
-
-		// If we have a else statment
-		if (*itr == "else")
-		{
-			if (inter_output[inter_output.size()-1].id != IF_END)
-			{
-				std::cout << "Expected an end to an if statment before an else statment.\n"; 
-				exit(-1);
-			}
-
-			itr++;
-
-			if (*(itr) != "{" && *(itr) != "if")
-			{
-				std::cout << "Expected '{' or if statment after else statment.\n"; 
-				exit(-1);
-			}
-
-			inter_output.push_back(inter(ELSE_BEGIN, 0, ""));
-			statment_stack.push(inter(ELSE_END, 0, ""));
-			continue;
-		}
-
-		// If we have a while loop
-		if (*itr == "while")
-		{
-			inter_output.push_back(inter(WHILE_BEGIN, 0, ""));
-			statment_stack.push(inter(WHILE_END, 0, ""));
-			itr++;
-
-			if (*(itr) != "{") 
-			{ 
-				std::cout << "Expected '{' after a while statment.\n"; 
-				exit(-1); 
-			}
-
-			rpn_size--;
-			continue;
-		}
-
-		// If we are defining a function
-		if (*itr == "fn")
-		{
-			if(current_owner != -1) 
-			{ 
-				std::cout << "Function defintion inside another function is not valid.\n"; 
-				exit(-1); 
-			}
-
-			if(rpn_size)
-			{ 
-				std::cout << "Expected the nothing on the RPN stack before a function definiton.\n"; 
-				exit(-1); 
-			}
-
-			itr++;
-			std::string name = (*itr).substr(0, (*itr).find('(') );
-
-			if(!is_str_letters(name)) 
-			{ 
-				std::cout << "The function name: " << name << " contains invalid characters.\n"; 
-				exit(-1); 
-			}
-
-			if(get_function_token(name)) 
-			{ 
-				std::cout << "The function name: " << name << " is already used.\n"; 
-				exit(-1); 
-			}
-
-			if(!is_valid_name(name)) 
-			{ 
-				std::cout << "The function name: " << name << " isn't valid.\n"; 
-				exit(-1); 
-			}
-
-			add_function_token(name);
-			symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
-			// This reads through the input variables of the function
-			u8 current_type = 0; // The type of the current variable
-			i32 stack_space_needed = 0; // The stack space needed for all the input variables to the function
-			// TODO: Input variables shouldn't use stack space by default, registers would be a lot better
-			while (true)
-			{
-				if (itr == file.end())
-				{
-					std::cout << "Error while parsing function defintion: reached end of file.\n"; 
-					exit(-1);
-				}
-
-				std::string token = *itr;
-
-				if (token == ",") { itr++; continue; }
-
-				if (token == ")")
-					break;
-
-				// TODO: Add default varaible assignment
-				if (token == "=")
-				{
-					std::cout << "Default function input variable assignemt has not yet been added.\n"; 
-					exit(-1);
-				}
-
-				if (current_type)
-				{
-					// This checks if there is another variable with the same name
-					// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner
-					// TODO: This should check if the variable name is valid
-					if (get_variable_token(token)) 
-					{ 
-						std::cout << "A variable with that name already exists.\n"; 
-						exit(-1); 
-					}
-					stack_space_needed -= types_size[current_type];
-					add_variable_token(token, current_type, symbol_table.functions.size()-1, stack_space_needed);
-					current_type = 0;
-				}
-				// If this variable is the type
-				else
-					current_type = into_id(token);
-
-				itr++;
-			}
-
-			itr += 1;
-			inter_output.push_back(inter(FUNC_BEGIN, 0, name));
-			statment_stack.push(inter(FUNC_END, 0, name));
-			std::cout << *itr << "\n";
-
-			if (*(itr) != "{")
-			{
-				std::cout << "Expected '{' after a function defintion.\n"; 
-				exit(-1);
-			}
-
-			continue;
-		}
-
-		// This turns any remaining tokens into their intermediate forms
-		single_into_inter(&(*itr),rpn_size,current_owner,current_stack);
-
-		// Updating the size of the RPN stack
-		if (inter_output[inter_output.size()-1].id == EQUAL)
-			rpn_size--;
-		
-		if ((inter_output[inter_output.size()-1].id >= VARIABLE_DECLERATION && inter_output[inter_output.size()-1].id <= VARIABLE_ACCESS))
-			rpn_size++;
-		
-		if ((inter_output[inter_output.size()-1].id >= 20 && inter_output[inter_output.size()-1].id <= 23) || (inter_output[inter_output.size()-1].id >= 8 && inter_output[inter_output.size()-1].id <= 19))
-			rpn_size--;
+		error::send_error("Unknown token: " + *itr + ".\n");
 	}
 
 	if (statment_stack.size())
-	{
-		std::cout << "Expected all statments to be closed before the end of the file.\n"; 
-		exit(-1);
-	}
+		error::send_error("Expected all statments to be closed before the end of the file.\n");
 
 	#if DEBUG
 		for (inter _inter : inter_output)

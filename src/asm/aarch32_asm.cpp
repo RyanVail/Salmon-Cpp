@@ -1,11 +1,12 @@
 /* This file turns the intermediate repersentation into aarch32 asm */
 
-#include <asm/aarch32_asm.hpp>
-#include <stack>
-#include <vector>
-#include <intermediate/intermediate.hpp>
-#include <symboltable.hpp>
-#include <operanddefinition.hpp>
+#include<asm/aarch32_asm.hpp>
+#include<stack>
+#include<vector>
+#include<intermediate/intermediate.hpp>
+#include<symboltable.hpp>
+#include<operanddefinition.hpp>
+#include<error.hpp>
 
 // TODO: Branchpoints should be caps
 
@@ -173,10 +174,7 @@ namespace aarch32_asm
                         asm_file, asm_functions);
 
             else
-            {
-                std::cout << "Error while defining a variable's value.\n";
-                exit(-1);
-            }
+                error::send_error("Error while defining a variable's value.\n");
 
             rpn_stack.pop();
             value_in_r0 = operand::operand_def(0, 0, 0, 0);
@@ -366,24 +364,16 @@ namespace aarch32_asm
                 case FUNC_CALL:
                     current_function = get_function_token(current_inter.refrenced_name);
                     if (!current_function)
-                    {
-                        std::cout << "Known function: " << current_inter.refrenced_name << "\n";
-                        exit(-1);
-                    }
+                        erorr::send_error("Unknown function: " + current_inter.refrenced_name + "\n");
                     if (current_function->inputs.size() > 8)
-                    {
-                        std::cout << "Error: The function " << current_inter.refrenced_name << " takes more than eight values which is not valid.\n";
-                        exit(-1);
-                    }
+                        erorr::send_error("The function " + current_inter.refrenced_name + " takes more than eight values which is not valid.\n");
                     current_register = 0; // The current register we are offloading the inputs of the function into
                     // This offloads the needed values as input from the stack into the registers
                     for (variable_token current_variable : current_function->inputs)
                     {
                         if (rpn_stack.empty() && !value_in_r0.final_type)
-                        {
-                            std::cout << "Expected something to be one the stack while calling function: " << current_inter.refrenced_name << "\n";
-                            exit(-1);
-                        }
+                            error::send_error("Expected something to be one the stack while calling function: " + current_inter.refrenced_name + "\n");
+
                         // If there is something in R0 right now
                         if (value_in_r0.final_type)
                         {
@@ -395,8 +385,7 @@ namespace aarch32_asm
                                 {
                                     std::cout << "explicitly ";
                                 }
-                                std::cout << "transform type " << id_into_string(rpn_stack.top().final_type) << " into " << id_into_string(current_variable.type);
-                                exit(-1);
+                                error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
                             }
                             current_register++;
                             continue; // If we can transform the value in R0 into the input type we just continue and incrament "current_register"
@@ -415,8 +404,7 @@ namespace aarch32_asm
                             {
                                 std::cout << "explicitly ";
                             }
-                            std::cout << "transform type " << id_into_string(rpn_stack.top().final_type) << " into " << id_into_string(current_variable.type);
-                            exit(-1);
+                            erorr::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
                         }
                     }
                     // This actually calls the function
@@ -427,14 +415,10 @@ namespace aarch32_asm
                     break;
                 case FUNC_BEGIN:
                     if (!statment_stack.empty() || in_func)
-                    {
-                        std::cout << "Functions can only be defined in the global scope.\n";
-                        exit(-1);
-                    }
+                        error::send_error("Functions can only be defined in the global scope.\n");
                     if (!rpn_stack.empty())
                     {
-                        std::cout << "RPN stack should be empty before defining a function.\n";
-                        exit(-1);
+                        erorr::send_error("RPN stack should be empty before defining a function.\n");
                     }
                     in_func = true;
                     statment_stack.push(statment_defintion(0, "fn_" + current_inter.refrenced_name));

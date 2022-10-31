@@ -1,7 +1,10 @@
 /* This does type checking during the tokens to intermediate phase */
 
+#include<typechecker.hpp>
 #include<vartypes.hpp>
 #include<iostream>
+#include<typedefs.hpp>
+#include<intermediate/intermediate.hpp>
 
 /*
  * first bit is signed flag
@@ -28,6 +31,28 @@
 
 namespace typechecker
 {
+    // This will send an error if an operation cannot be done
+    void operation_can_be_done()
+    {
+
+    }
+
+    // TODO: This should use "get_local_variable_token"
+    u8 get_type_of_inter(inter _inter)
+    {
+        if (_inter.id == CONST)
+            return _inter.refrenced_name[0];
+
+        if (_inter.id == FUNC_CALL)
+            return get_function_token(_inter.refrenced_variable_token)->output;
+
+        if (_inter.id == VARIABLE_ACCESS)
+        {
+            return get_variable_token(_inter.refrenced_variable_token)->type;
+        }
+
+    }
+
     // Can turn "type_a" into "type_b"
     // 0 -> can be transformed 1 -> cannot be transformed without explicit transform 2-> can't be at all
     u8 can_be_converted_to(u8 type_a, u8 type_b)

@@ -89,6 +89,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
 
 # Problems and TODOs
 - ## General
+    - ### If we are clearing the stack after calling a function we still need to call the function
     - ### Constants above the 32 bit int limit don't work right now
     - ### **TYPES ARE JUST NOT USED LIKE AT ALL!**
     - ### There is no support for signed types
