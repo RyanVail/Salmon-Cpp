@@ -6,20 +6,26 @@
 #include<symboltable.hpp>
 #include<typedefs.hpp>
 
-// This struct is a value definition
-
-// This struct defines a single intermediate instruction
-// TODO: "value" should somehow suport larger nums
+// This struct defines a single intermediate instruction.
+// "value" is assumed based on the intermediate id.
 struct inter
 {
 	u8 id; // This is the id/type of the intermediate token
 	u8 type; // This is the type of the value if it's a constant
-	i32 value; // This is a value of the inter if it's a constant
-	variable_token* var; // This is the variable token that is refrenced if it was
-	function_token* func; // This is the function token that is refrenced if it was
-	inter(u8 _id, variable_token* _var) : id(_id), var(_var) {};
-	inter(u8 _id, function_token* _func) : id(_id), func(_func) {};
+	i32 value; // This is an id of a variable or function or a const value
+	inter(u8 _id) : id(_id) {};
+	inter(u8 _id, variable_token* _var) : id(_id), var(_var->id) {};
+	inter(u8 _id, function_token* _func) : id(_id), func(_func->id) {};
 	inter(u8 _id, i32 _value, u8 _type) : id(_id), value(_value), type(_type) {};
+	// These are quality of life functions
+	function_token* get_func()
+	{
+		get_function_token("", self.value);
+	}
+	variable_token* get_var()
+	{
+		get_variable_token("", self.value);
+	}
 };
 
 void postprocessor_add_inter(inter _inter);
@@ -27,7 +33,6 @@ void postprocessor_add_inter(inter _inter);
 // TODO: "VARIABLE_TYPE" should be called "TYPE"
 // I know that using #defines may be clunky and result in all of unintential 
 // bugs, but I think it's preferable to enums because the code is clearner.
-// Excluding the #undefs.
 //
 // The below comments were made with a tab size of four
 // These are the intermediate instructions types/ids

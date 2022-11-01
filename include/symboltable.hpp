@@ -13,6 +13,10 @@ struct symbols;
 struct variable_token;
 struct function_token;
 
+// TODO: Variable and function ids are signed because we pass and return -1
+// but -1 is the only negative that is every used so just make it unsigned and
+// use U32_MAX.
+
 // This is going to be used once by a static symbol table
 struct symbols
 {

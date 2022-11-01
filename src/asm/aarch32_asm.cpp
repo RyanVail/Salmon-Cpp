@@ -133,7 +133,7 @@ namespace aarch32_asm
             case MEM_ADDRS:
                 add_asm(in_func,
                         "ADD R0,SP,#" +
-                            get_variable_token(current_inter.refrenced_name)->stack_location,
+                            current_inter.get_var()->stack_location,
                         asm_file, asm_functions);
                 break;
             case INCRAMENT:
@@ -271,14 +271,14 @@ namespace aarch32_asm
             switch(current_inter_id)
             {
                 case VARIABLE_DECLERATION:
-                    rpn_stack.push(operand::operand_def(1, current_inter.refrenced_variable_token, 0, 0));
+                    rpn_stack.push(operand::operand_def(1, current_inter.get_var(), 0, 0));
                     break;
                 case CONST:
                     rpn_stack.push(operand::operand_def(current_inter.value, 0, 0, 0));
                     break;
                 case VARIABLE_ACCESS:
                     // TODO: This should go back and find the "VARIABLE_TYPE" token since it isn't set in "intermediate.cpp" or do it in "intermediate.cpp"
-                    rpn_stack.push(operand::operand_def(0, current_inter.refrenced_variable_token, 0, get_variable_token(current_inter.refrenced_name)->type));
+                    rpn_stack.push(operand::operand_def(0, current_inter.get_var, 0, current_inter.get_var()->type));
                     break;
                 case WHILE_BEGIN:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
@@ -362,17 +362,15 @@ namespace aarch32_asm
                     in_func = false;
                     break;
                 case FUNC_CALL:
-                    current_function = get_function_token(current_inter.refrenced_name);
-                    if (!current_function)
-                        erorr::send_error("Unknown function: " + current_inter.refrenced_name + "\n");
+                    current_function = current_inter.get_func();
                     if (current_function->inputs.size() > 8)
-                        erorr::send_error("The function " + current_inter.refrenced_name + " takes more than eight values which is not valid.\n");
+                        erorr::send_error("The function " + current_function->name + " takes more than eight values which is not valid.\n");
                     current_register = 0; // The current register we are offloading the inputs of the function into
                     // This offloads the needed values as input from the stack into the registers
                     for (variable_token current_variable : current_function->inputs)
                     {
                         if (rpn_stack.empty() && !value_in_r0.final_type)
-                            error::send_error("Expected something to be one the stack while calling function: " + current_inter.refrenced_name + "\n");
+                            error::send_error("Expected something to be one the stack while calling function: " + current_function->name + "\n");
 
                         // If there is something in R0 right now
                         if (value_in_r0.final_type)
@@ -410,7 +408,7 @@ namespace aarch32_asm
                     // This actually calls the function
                     add_asm(in_func,
                             "BL func_" +
-                                current_inter.refrenced_name,
+                                current_inter.get_func()->id,
                             asm_file, asm_functions);
                     break;
                 case FUNC_BEGIN:
@@ -421,17 +419,17 @@ namespace aarch32_asm
                         erorr::send_error("RPN stack should be empty before defining a function.\n");
                     }
                     in_func = true;
-                    statment_stack.push(statment_defintion(0, "fn_" + current_inter.refrenced_name));
+                    statment_stack.push(statment_defintion(0, "fn_" + current_inter.get_func()->id));
                     asm_functions.push_back("");
                     add_asm(in_func,
                             "fn_" +
-                                current_inter.refrenced_name +
+                                current_inter.get_func()->id +
                                 ":\n" +
                                 "SUB SP, #" +
-                                std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                                std::to_string(current_inter.get_func()->stack_space_needed),
                             asm_file, asm_functions);
                     current_register = 0;
-                    for (variable_token &current_variable : get_function_token(current_inter.refrenced_name)->inputs)
+                    for (variable_token &current_variable : current_inter.get_func()->inputs)
                     {
                         // If this is 32 bit
                         if (is_normal(current_variable.type))
@@ -442,7 +440,7 @@ namespace aarch32_asm
                                         ", [SP,#" +
                                         std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
                                         "]" +
-                                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                                        std::to_string(current_inter.get_func()->stack_space_needed),
                                     asm_file, asm_functions);
                         }
                         // If this is 8 bit
@@ -454,7 +452,7 @@ namespace aarch32_asm
                                         ", [SP,#" +
                                         std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
                                         "]" +
-                                        std::to_string(get_function_token(current_inter.refrenced_name)->stack_space_needed),
+                                        std::to_string(current_inter.get_func()->stack_space_needed),
                                     asm_file, asm_functions);
                         }
                         //else { std::cout << "Error while offloading function inputs into the stack.\n"; exit(-1); }

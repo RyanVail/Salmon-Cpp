@@ -44,17 +44,19 @@ inline void add_function_call_operand(function_token *to_add)
 }
 
 // There should be another "add_inter" function that takes in an inter that is used when we offload statment stack
-inline void add_inter(u8 _id, i32 _const, variable_token *_var, function_token *_func)
+inline void add_inter(u8 _id, u8 _type, i32 _const, variable_token *_var, function_token *_func)
 {
-	if (_var)
-		inter_output.push_back(inter(_id, _var));
+	if (_var != nullptr)
+		inter_output.push_back(inter(_id, _var->id));
+	else if (_func != nullptr)
+		inter_output.push_back(inter(_id, _func->id));
 	else
-		inter_output.push_back(inter(_id, _func));
+		inter_output.push_back(inter(_type, _id, _const));
 }
 
-inline void add_statment(u8, _id, i32 _const, variable_token *_var, function_token *_func)
+inline void add_statment(u8, _id)
 {
-	statment_stack.push(inter(_id, _func));
+	statment_stack.push(inter(_id));
 }
 
 // This takes the top operand off and generates its intermediate repersentation
@@ -62,13 +64,13 @@ void top_operand_to_inter()
 {
 	operand::operand_def top_operand = operand_stack.top()
 
-	u8 _type = top_opearnd.refrenced_name;
+	u8 _type = top_opearnd.type;
 	
 	if (!top_operand.accessed_variable && !top_operand.called_function)
 		add_inter(CONST, top_operand.const_value, _type);
 
 	else if (top_opearnd.accessed_variable != nullptr)
-		add_inter(VARIABLE_ACCESS, top_operand.accessed_variable, "");
+		add_inter(VARIABLE_ACCESS, top_operand.accessed_variable.id);
 }
 
 // This takes the values needed for a function call off the operand stack
@@ -102,43 +104,43 @@ inline bool single_char_operator_into_inter(i8 operator_char)
 	switch(operator_char)
 	{
 	case '!':
-		add_inter(NOT, 0, "");
+		add_inter(NOT);
 		break;
 	case '@':
-		add_inter(GET, 0, "");
+		add_inter(GET);
 		break;
 	case '%':
-		add_inter(MEM_ADDRS, 0, "");
+		add_inter(MEM_ADDRS);
 		break;
 	case '&':
-		add_inter(AND, 0, "");
+		add_inter(AND);
 		break;
 	case '|':
-		add_inter(OR, 0, "");
+		add_inter(OR);
 		break;
 	case '^':
-		add_inter(XOR, 0, "");
+		add_inter(XOR);
 		break;
 	case '=':
-		add_inter(EQUAL, 0, "");
+		add_inter(EQUAL);
 		break;
 	case '<':
-		add_inter(LESS, 0, "");
+		add_inter(LESS);
 		break;
 	case '>':
-		add_inter(GREATER, 0, "");
+		add_inter(GREATER);
 		break;
 	case '+':
-		add_inter(ADD, 0, "");
+		add_inter(ADD);
 		break;
 	case '-':
-		add_inter(SUB, 0, "");
+		add_inter(SUB);
 		break;
 	case '/':
-		add_inter(DIV, 0, "");
+		add_inter(DIV);
 		break;
 	case '*':
-		add_inter(MUL, 0, "");
+		add_inter(MUL);
 		break;
 	default:
 		return false;
@@ -155,31 +157,33 @@ inline bool operator_into_inter(std::string *token_itr)
 
 	u32 tmp = inter_output.size();
 
-	// Simple string operators
+	// === Simple string operators === 
+
 	if (*token_itr == "<<")
-		add_inter(LSL, 0, "");
+		add_inter(LSL);
 	if (*token_itr == ">>")
-		add_inter(LSR, 0, "");
+		add_inter(LSR);
 	if (*token_itr == "==")
-		add_inter(IS_EQUAL, 0, "");
+		add_inter(IS_EQUAL);
 	if (*token_itr == "<=")
-		add_inter(LESS_EQUAL, 0, "");
+		add_inter(LESS_EQUAL);
 	if (*token_itr == "++")
-		add_inter(INCRAMENT, 0, "");
+		add_inter(INCRAMENT);
 	if (*token_itr == "--")
-		add_inter(DECRAMENT, 0, "");
+		add_inter(DECRAMENT);
 	if (*token_itr == "return")
-		add_inter(RETURN, 0, "");
+		add_inter(RETURN);
 	if (*token_itr == "break")
-		add_inter(BREAK, 0, "");
+		add_inter(BREAK);
 	if (*token_itr == "continue")
-		add_inter(CONTINUE, 0, "");
+		add_inter(CONTINUE);
 	if (*token_itr == ">=")
-		add_inter(GREATER_EQUAL, 0, "");
+		add_inter(GREATER_EQUAL);
 `
-	// Complex operators
+	// === Complex operators ===
+
 	if (is_type(*token_itr) != -1)
-		add_inter(VARIABLE_TYPE, 0, *itr);
+		add_inter(VARIABLE_TYPE, *itr, 0);
 
 	// TODO: Test if this still works
 	if (*token_itr == "#")
@@ -206,9 +210,9 @@ inline bool operator_into_inter(std::string *token_itr)
 
 	if (*token_itr == "}")
 	{
-		if (rpn_size && statment_stack.top().id != WHILE_END)
+		if (!operand_stack.empty() && statment_stack.top().id != WHILE_END)
 			error::send_error("RPN stack size should be zero before ending a statment.\n");
-		if (rpn_size >= 2) 
+		if (operand_stack.size() >= 2) 
 			error::send_error("Expected one thing operand after ending a while statment but got: " + std::to_string(operand_stack.size()) + ".\n");
 		if (statment_stack.empty())
 			error::send_error("Unexpected '}'.\n");
@@ -220,7 +224,7 @@ inline bool operator_into_inter(std::string *token_itr)
 
 	if (*token_itr == ";")
 	{
-		add_inter(RESET_RPN, 0, "");
+		add_inter(RESET_RPN);
 		operand_stack = {};
 	}
 
@@ -242,7 +246,7 @@ inline void function_call_into_inter(std::string *token_itr)
 {
 	if(current_owner != -1) 
 		error::send_error("Function defintion inside another function is not valid.\n");
-	if(rpn_size)
+	if(!operand_stack.empty())
 		error::send_error("Expected the nothing on the RPN stack before a function definiton.\n");
 
 	token_itr++;
@@ -301,8 +305,8 @@ inline void function_call_into_inter(std::string *token_itr)
 	}
 
 	token_itr += 1;
-	add_inter(FUNC_BEGIN, 0, name);
-	add_statment(FUNC_END, 0, name);
+	add_inter(FUNC_BEGIN, get_function_token(name)->id);
+	add_statment(FUNC_END);
 	#if DEBUG
 		std::cout << *token_itr << "\n"; // TODO: REMOVE THIS TEST LINE!
 	#endif
@@ -316,13 +320,12 @@ inline bool statment_into_inter(std::string *token_itr)
 {
 	if (*token_itr == "if")
 	{
-		add_inter(IF_BEGIN, 0, "");
-		add_statment(IF_END, 0, "");
+		add_inter(IF_BEGIN);
+		add_statment(IF_END);
 		token_itr++;
 		if (*(token_itr) != "{") 
 			error::send_error("Expected '{' after an if statment.\n");
-		
-		rpn_size--;
+		top_operand_to_inter();
 		return true;
 	}
 	if (*token_itr == "else")
@@ -335,20 +338,20 @@ inline bool statment_into_inter(std::string *token_itr)
 		if (*(token_itr) != "{" && *(token_itr) != "if")
 			error::send_error("Expected '{' or if statment after else statment.\n");
 
-		add_inter(ELSE_BEGIN, 0, "");
-		add_statment(ELSE_END, 0, "");
+		add_inter(ELSE_BEGIN);
+		add_statment(ELSE_END);
 		return true;
 	}
 	if (*token_itr == "while")
 	{
-		add_inter(WHILE_BEGIN, 0, "");
-		add_statment(WHILE_END, 0, "");
+		add_inter(WHILE_BEGIN);
+		add_statment(WHILE_END);
 		token_itr++;
 
 		if (*(token_itr) != "{") 
 			error::send_error("Expected '{' after a while statment.\n");
 
-		rpn_size--;
+		top_operand_to_inter();
 		return true;
 	}
 	if (is_str_letters(*token_itr))
@@ -359,19 +362,18 @@ inline bool statment_into_inter(std::string *token_itr)
 		// Otherwise we check the symbol table and assume we are accessing a variable
 		if (inter_output.size() && inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
 		{
-			if (rpn_size)
+			if (!operand_stack.empty())
 				error::send_error("There must be no operands before defining a variable.\n");
 
 			current_stack -= types_size[inter_output[inter_output.size()-1].type];
 
-			add_inter(VARIABLE_DECLERATION, 0 ,get_variable_token(*token_itr), 0);
+			add_inter(VARIABLE_DECLERATION, get_variable_token(*token_itr)->id);
 		}
 
 		// We check if the variable is in the symbol table, if not we send an error
 		if (!get_variable_token(*token_itr))
 			error::send_error("Unknown variable: " + *token_itr + ".\n");
-
-		add_inter(VARIABLE_ACCESS, 0, *token_itr, get_variable_token(*token_itr));
+		add_inter(VARIABLE_ACCESS, get_variable_token(*token_itr)->id);
 		return true;
 	}
 	if (*token_itr == "fn")
