@@ -34,6 +34,8 @@ struct variable_token // TODO: Variables need to be able to change type during c
 	i32 stack_location; // The negative location on the stack from the current point
 	variable_token(std::string _name, u8 _type, i32 _owner, i32 _stack_location)
 	: name(_name), type(_type), owner(_owner), stack_location(_stack_location) {};
+	// This constructor is only used for function input variable definition
+	variable_token(u8 _type) : type(_type) {};
 };
 
 struct function_token

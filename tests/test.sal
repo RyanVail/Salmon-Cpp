@@ -3,6 +3,15 @@
     Stack should be at a size of one before a while statment
     Comments should be allowed to be inside each other WITHOUT RECURSION
 */
+
+/* 
+ * If there is something in R0 and we are calling a function that takes no
+ * inputs we need to push the value in R0 into the stack and functions should
+ * use fp so we don't need to tell the function if something is in R0.
+ */
+
+/* #extern void std_print_int(u32) */
+
 u32 a 3 =
 5 3 + if
 {

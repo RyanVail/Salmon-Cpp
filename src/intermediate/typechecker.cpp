@@ -31,12 +31,6 @@
 
 namespace typechecker
 {
-    // This will send an error if an operation cannot be done
-    void operation_can_be_done()
-    {
-
-    }
-
     // TODO: This should use "get_local_variable_token"
     u8 get_type_of_inter(inter _inter)
     {
@@ -46,6 +40,7 @@ namespace typechecker
             return _inter.func->output;
         if (_inter.id == VARIABLE_ACCESS)
             return _inter.var->type;
+        return 0;
 
     }
 

@@ -27,6 +27,7 @@ This is a compiler for an esoteric-like programming language that is proably goi
         ```
         3 2 1 + -
         ```
+    - Salmon doesn't fit the bill as a RPN based programming language fully specifically the statments and variable declerations are based on C++.current_stack
 - ### Semicolons
     - Semicolons will remove every operand before it
         ```

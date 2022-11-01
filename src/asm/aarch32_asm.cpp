@@ -9,6 +9,7 @@
 #include<error.hpp>
 
 // TODO: Branchpoints should be caps
+// Current name mangaling is just terrible and is not needed in the first place.
 
 namespace aarch32_asm
 {

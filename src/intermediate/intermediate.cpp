@@ -86,7 +86,7 @@ void function_call_inter_prep(function_token &_fn)
 		{
 			std::cout << "Cannot ";
 
-			if (can_be_transformed_into(value_in_r0.final_type, current_variable.type) == 0)
+			if ((_can_be) == 0)
 				std::cout << "explicitly ";
 
 			error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
@@ -242,7 +242,8 @@ inline bool operator_into_inter(std::string *token_itr)
 	return true;
 }
 
-inline void function_call_into_inter(std::string *token_itr)
+// TODO: This should set the function's inputs
+inline void function_into_inter(std::string *token_itr)
 {
 	if(current_owner != -1) 
 		error::send_error("Function defintion inside another function is not valid.\n");
@@ -277,7 +278,6 @@ inline void function_call_into_inter(std::string *token_itr)
 			token_itr++; 
 			continue;
 		}
-
 		if (token == ")")
 			break;
 
@@ -299,6 +299,8 @@ inline void function_call_into_inter(std::string *token_itr)
 		}
 		// If this variable is the type
 		else
+			if (!into_id(token))
+				error::send_error("Unknown type in function definition: " + token + ".\n");
 			current_type = into_id(token);
 
 		token_itr++;
@@ -378,7 +380,7 @@ inline bool statment_into_inter(std::string *token_itr)
 	}
 	if (*token_itr == "fn")
 	{
-		function_call_into_inter(token_itr);
+		function_into_inter(token_itr);
 		return true;
 	}
 

@@ -15,8 +15,8 @@ const i8 special_characters[] = { '*', '/', '{', '}', ';', '^', '!', '&',
 bool is_blank(char &character)
 {
 	// TODO: Find out if GCC unravels this at O3
-	for (i32 current_blank=0; current_blank < blank_characters_len; current_blank++)
-		if (blank_characters[current_blank] == character)
+	for (i32 _b=0; _b < blank_characters_len; _b++)
+		if (blank_characters[_b] == character)
 			return true;
 
 	return false;
@@ -25,8 +25,8 @@ bool is_blank(char &character)
 // Returns true if a character is special otherwise false
 bool is_special(char &character)
 {
-	for (i32 current_special=0; current_special < special_characters_len; current_special++)
-		if (special_characters[current_special] == character)
+	for (i32 _s=0; _s < special_characters_len; _s++)
+		if (special_characters[_s] == character)
 			return true;
 
 	return false;
