@@ -112,9 +112,9 @@ void add_function_token(std::string _name, std::vector<variable_token> _inputs =
 
 	// This sets the id to one more than the last function in symbol_table. If there is no function before this we set the id to 0
 	if (symbol_table.functions.size())
-		new_function.id = symbol_table.functions[symbol_table.functions.size()-1].id + 1;
+		_new_function.id = symbol_table.functions[symbol_table.functions.size()-1].id + 1;
 	else
-		new_function.id = 0;
+		_new_function.id = 0;
 
-	symbol_table.functions.push_back(new_function);
+	symbol_table.functions.push_back(_new_function);
 }

@@ -14,17 +14,17 @@ struct inter
 	u8 type; // This is the type of the value if it's a constant
 	i32 value; // This is an id of a variable or function or a const value
 	inter(u8 _id) : id(_id) {};
-	inter(u8 _id, variable_token* _var) : id(_id), var(_var->id) {};
-	inter(u8 _id, function_token* _func) : id(_id), func(_func->id) {};
+	inter(u8 _id, variable_token* _var) : id(_id), value(_var->id) {};
+	inter(u8 _id, function_token* _func) : id(_id), value(_func->id) {};
 	inter(u8 _id, i32 _value, u8 _type) : id(_id), value(_value), type(_type) {};
 	// These are quality of life functions
 	function_token* get_func()
 	{
-		get_function_token("", self.value);
+		get_function_token("", value);
 	}
 	variable_token* get_var()
 	{
-		get_variable_token("", self.value);
+		get_variable_token("", value);
 	}
 };
 

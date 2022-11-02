@@ -37,9 +37,9 @@ namespace typechecker
         if (_inter.id == CONST)
             return _inter.type;
         if (_inter.id == FUNC_CALL)
-            return _inter.func->output;
+            return _inter.get_func()->output;
         if (_inter.id == VARIABLE_ACCESS)
-            return _inter.var->type;
+            return _inter.get_var()->type;
         return 0;
 
     }

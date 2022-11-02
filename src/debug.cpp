@@ -21,10 +21,10 @@ void print_inter(inter to_print)
 	std::cout << INTERS[to_print.id];
 	if (to_print.value)
 		std::cout << " : " << to_print.value;
-	if (to_print.func)
-		std::cout << " : " << to_print.func->name;
-	if (to_print.var)
-		std::cout << " : " << to_print.var->name;
+	if (to_print.get_func())
+		std::cout << " : " << to_print.get_func()->name;
+	if (to_print.get_var())
+		std::cout << " : " << to_print.get_var()->name;
 	std::cout << "\n";
 }
 

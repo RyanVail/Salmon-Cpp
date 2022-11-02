@@ -47,14 +47,14 @@ inline void add_function_call_operand(function_token *to_add)
 inline void add_inter(u8 _id, u8 _type, i32 _const, variable_token *_var, function_token *_func)
 {
 	if (_var != nullptr)
-		inter_output.push_back(inter(_id, _var->id));
+		inter_output.push_back(inter(_id, _var));
 	else if (_func != nullptr)
-		inter_output.push_back(inter(_id, _func->id));
+		inter_output.push_back(inter(_id, _func));
 	else
 		inter_output.push_back(inter(_type, _id, _const));
 }
 
-inline void add_statment(u8, _id)
+inline void add_statment(u8 _id)
 {
 	statment_stack.push(inter(_id));
 }
@@ -62,14 +62,14 @@ inline void add_statment(u8, _id)
 // This takes the top operand off and generates its intermediate repersentation
 void top_operand_to_inter()
 {
-	operand::operand_def top_operand = operand_stack.top()
+	operand::operand_def top_operand = operand_stack.top();
 
-	u8 _type = top_opearnd.type;
+	u8 _type = top_operand.final_type;
 	
 	if (!top_operand.accessed_variable && !top_operand.called_function)
 		add_inter(CONST, top_operand.const_value, _type);
 
-	else if (top_opearnd.accessed_variable != nullptr)
+	else if (top_operand.accessed_variable != nullptr)
 		add_inter(VARIABLE_ACCESS, top_operand.accessed_variable.id);
 }
 
@@ -180,7 +180,7 @@ inline bool operator_into_inter(std::string *token_itr)
 		add_inter(CONTINUE);
 	if (*token_itr == ">=")
 		add_inter(GREATER_EQUAL);
-`
+
 	// === Complex operators ===
 
 	if (is_type(*token_itr) != -1)
