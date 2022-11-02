@@ -101,6 +101,7 @@ void function_call_inter_prep(function_token &_fn)
 // Returns true if it added something
 inline bool single_char_operator_into_inter(i8 operator_char)
 {
+	// These operators should validate themselvesTO
 	switch(operator_char)
 	{
 	case '!':
@@ -243,6 +244,7 @@ inline bool operator_into_inter(std::string *token_itr)
 }
 
 // TODO: This should set the function's inputs
+// TODO: This should read the output typef
 inline void function_into_inter(std::string *token_itr)
 {
 	if(current_owner != -1) 
@@ -305,7 +307,6 @@ inline void function_into_inter(std::string *token_itr)
 
 		token_itr++;
 	}
-
 	token_itr += 1;
 	add_inter(FUNC_BEGIN, get_function_token(name)->id);
 	add_statment(FUNC_END);

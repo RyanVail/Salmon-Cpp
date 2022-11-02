@@ -149,6 +149,7 @@ namespace aarch32_asm
         }
 
         // If we are seting a variable equal to some value
+        // TODO: This should allow setting a memory location equal to a value
         if (current_inter_id == EQUAL)
         {
             // If there is nothing in R0 we offload the top value
@@ -162,7 +163,7 @@ namespace aarch32_asm
             if (is_normal(rpn_stack.top().final_type))
                 add_asm(in_func,
                         "STR R0, [SP,#" +
-                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
+                            std::to_string(rpn_stack.top().get_var()->stack_location + types_size[rpn_stack.top().final_type]) +
                             "]",
                         asm_file, asm_functions);
 
@@ -170,7 +171,7 @@ namespace aarch32_asm
             else if (is_char(rpn_stack.top().final_type))
                 add_asm(in_func,
                         "STRB R0, [SP,#" +
-                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
+                            std::to_string(rpn_stack.top().get_var()->stack_location + types_size[rpn_stack.top().final_type]) +
                             "]",
                         asm_file, asm_functions);
 
