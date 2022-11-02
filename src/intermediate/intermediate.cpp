@@ -44,7 +44,7 @@ inline void add_function_call_operand(function_token *to_add)
 }
 
 // There should be another "add_inter" function that takes in an inter that is used when we offload statment stack
-inline void add_inter(u8 _id, u8 _type, i32 _const, variable_token *_var, function_token *_func)
+inline void add_inter(u8 _id, u8 _type = 0, i32 _const = 0, variable_token *_var = 0, function_token *_func = 0)
 {
 	if (_var != nullptr)
 		inter_output.push_back(inter(_id, _var));
@@ -101,7 +101,7 @@ void function_call_inter_prep(function_token &_fn)
 // Returns true if it added something
 inline bool single_char_operator_into_inter(i8 operator_char)
 {
-	// These operators should validate themselvesTO
+	// TODO: These should make sure the operations are valid
 	switch(operator_char)
 	{
 	case '!':
@@ -391,7 +391,6 @@ inline bool statment_into_inter(std::string *token_itr)
 // This turns a file into a series of inters
 std::vector<inter> file_into_inter(std::vector<std::string> file)
 {
-	// TODO: All errors should show what they got instead of just what they expected
 	current_owner = -1;
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
