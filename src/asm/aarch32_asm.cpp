@@ -95,8 +95,9 @@ namespace aarch32_asm
         // This is done in the hopes it is stored in a register but I might be useless
         unsigned char current_inter_id = current_inter.id;
 
-        if (current_inter_id == ASM)
-            add_asm(in_func, current_inter.refrenced_name, asm_file, asm_functions);
+        // TODO: GET THIS ASM WORKING!
+        //if (current_inter_id == ASM)
+        //    add_asm(in_func, current_inter.refrenced_name, asm_file, asm_functions);
 
         bool was_for_one = false;
 
@@ -163,7 +164,7 @@ namespace aarch32_asm
             if (is_normal(rpn_stack.top().final_type))
                 add_asm(in_func,
                         "STR R0, [SP,#" +
-                            std::to_string(rpn_stack.top().get_var()->stack_location + types_size[rpn_stack.top().final_type]) +
+                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
                             "]",
                         asm_file, asm_functions);
 
@@ -171,7 +172,7 @@ namespace aarch32_asm
             else if (is_char(rpn_stack.top().final_type))
                 add_asm(in_func,
                         "STRB R0, [SP,#" +
-                            std::to_string(rpn_stack.top().get_var()->stack_location + types_size[rpn_stack.top().final_type]) +
+                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
                             "]",
                         asm_file, asm_functions);
 
@@ -280,7 +281,7 @@ namespace aarch32_asm
                     break;
                 case VARIABLE_ACCESS:
                     // TODO: This should go back and find the "VARIABLE_TYPE" token since it isn't set in "intermediate.cpp" or do it in "intermediate.cpp"
-                    rpn_stack.push(operand::operand_def(0, current_inter.get_var, 0, current_inter.get_var()->type));
+                    rpn_stack.push(operand::operand_def(0, current_inter.get_var(), 0, current_inter.get_var()->type));
                     break;
                 case WHILE_BEGIN:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
@@ -366,7 +367,7 @@ namespace aarch32_asm
                 case FUNC_CALL:
                     current_function = current_inter.get_func();
                     if (current_function->inputs.size() > 8)
-                        erorr::send_error("The function " + current_function->name + " takes more than eight values which is not valid.\n");
+                        error::send_error("The function " + current_function->name + " takes more than eight values which is not valid.\n");
                     current_register = 0; // The current register we are offloading the inputs of the function into
                     // This offloads the needed values as input from the stack into the registers
                     for (variable_token current_variable : current_function->inputs)
@@ -404,7 +405,7 @@ namespace aarch32_asm
                             {
                                 std::cout << "explicitly ";
                             }
-                            erorr::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
+                            error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
                         }
                     }
                     // This actually calls the function
@@ -418,14 +419,14 @@ namespace aarch32_asm
                         error::send_error("Functions can only be defined in the global scope.\n");
                     if (!rpn_stack.empty())
                     {
-                        erorr::send_error("RPN stack should be empty before defining a function.\n");
+                        error::send_error("RPN stack should be empty before defining a function.\n");
                     }
                     in_func = true;
                     statment_stack.push(statment_defintion(0, "fn_" + current_inter.get_func()->id));
                     asm_functions.push_back("");
                     add_asm(in_func,
                             "fn_" +
-                                current_inter.get_func()->id +
+                                std::to_string(current_inter.get_func()->id) +
                                 ":\n" +
                                 "SUB SP, #" +
                                 std::to_string(current_inter.get_func()->stack_space_needed),

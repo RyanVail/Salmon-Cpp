@@ -18,4 +18,5 @@ add_executable(Salmon
 	src/main.cpp
 	src/intermediate/postprocessor.cpp
 	src/asm/aarch32_asm.cpp
+	src/intermediate/optimization.cpp
 )

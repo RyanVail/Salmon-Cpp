@@ -4,8 +4,8 @@
 #define INTERMEDIATE_OPTIMZATION_H
 
 #include<vector>
-#include<intermediate/intermediate.h>
-#include<typedefs.h>
+#include<intermediate/intermediate.hpp>
+#include<typedefs.hpp>
 
 /* ==== Current optimiztions ====
  * Constant evuations

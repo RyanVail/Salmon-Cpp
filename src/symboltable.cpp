@@ -100,15 +100,17 @@ i32 get_stack_space_needed(i32 id)
 
 // This adds a function to the list of functions based on name, 
 // returns, and inputs.
-void add_function_token(std::string _name, std::vector<variable_token> _inputs = {})
+void add_function_token(std::string _name, u8 _output, std::vector<variable_token> _inputs)
 {
-	// TODO: This should make sure it is a valid token name
+	if (!is_valid_name(_name))
+		error::send_error("The function name: " + _name + "is not valid.");
 	if (get_function_token(_name) != 0)
 		error::send_error("The function name: " + _name + " is already used.");
 
 	function_token _new_function;
 	_new_function.name = _name;
 	_new_function.inputs = _inputs;
+	_new_function.output = _output;
 
 	// This sets the id to one more than the last function in symbol_table. If there is no function before this we set the id to 0
 	if (symbol_table.functions.size())

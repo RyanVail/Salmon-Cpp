@@ -6,7 +6,7 @@
 #include<vector>
 #include<stack>
 
-#include"tokenizer.cpp"
+#include"tokenizer.cpp" // TODO: Add "tokenizer.hpp" and put more functions inside namespaces
 #include<vartypes.hpp>
 #include<symboltable.hpp>
 #include<intermediate/intermediate.hpp>
@@ -56,7 +56,7 @@ std::string process_options(i32 argc, char *argv[])
 				exit(1);
 			}
 
-			error::send_error("Unknown option: " + argv[i] + "\n");
+			error::send_error("Unknown option: " + std::string(argv[i]) + "\n");
 		}
 		else if (argv[i][0] == '-')
 		{
@@ -66,7 +66,7 @@ std::string process_options(i32 argc, char *argv[])
 				std::cout << help_message; exit(1);
 				break;
 			default:
-				error::send_error("Unknown option: " + argv[i] + "\n");	
+				error::send_error("Unknown option: " + std::string(argv[i]) + "\n");	
 			}
 		}
 		else 

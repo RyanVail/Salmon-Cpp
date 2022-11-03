@@ -4,16 +4,20 @@
 #include<intermediate/intermediate.hpp>
 #include<iostream>
 #include<error.hpp>
+#include<string>
 
 // TODO: This should change based on the compilation target
 
 namespace postprocessor
 {
     // This is called by "intermediate.cpp" if it hits a '#'
-    void process_instruction(std::vector<std::string> &file, std::vector<std::string>::iterator &itr, std::vector<inter> &inter_output)
+    void process_instruction(std::string *itr, std::vector<inter> &inter_output)
     {
         if (*(itr+1) == "extern")
         {
+            // TODO: This should use the -> after a function name return type
+            // not the before the function name it uses now for some reason.
+
             // ==== Name and id ====
             u8 _return_type = into_id(*(itr+2));
             itr++;
@@ -21,7 +25,7 @@ namespace postprocessor
 
             // ==== Checks for errors ====
             if (!_return_type)
-                error::send_error("The external function's return type: " + _return_type + " isn't valid.\n");
+                error::send_error("The external function's return type: " + std::to_string(_return_type) + " isn't valid.\n");
             if(!is_str_letters(_name)) 
                 error::send_error("The external function name: " + _name + " contains invalid characters.\n");
             if(get_function_token(_name)) 
@@ -30,13 +34,11 @@ namespace postprocessor
                 error::send_error("The external function name: " + _name + " isn't valid.\n");
 
             // The function inputs are variables with just types
-            std::vector<inter> _inputs;
+            std::vector<variable_token> _inputs;
 
             // ==== Gets function inputs ====
             while (true)
             {
-                if (itr == file.end())
-                    error::send_error("Error while parsing function defintion: reached end of file.\n");
                 std::string token = *itr;
                 if (token == ",") 
                 { 
@@ -52,10 +54,7 @@ namespace postprocessor
                     _inputs.push_back(variable_token(into_id(token)));
                 itr++;
             }
-            function_token _func;
-            _func.inputs = _inputs;
-            _func.name = _name;
-            add_function_token(_func);
+            add_function_token(_name, _return_type, _inputs);
             itr += 1;
         }
         if (*(itr+1) == "asm")
@@ -65,8 +64,6 @@ namespace postprocessor
             while (true)
             {
                 itr++;
-                if (itr == file.end() || itr+1 == file.end() || itr+2 == file.end()) 
-                    error::send_error("Expected to find \"#asm_end\" before the end of the file.\n";
 
                 // If we hit another postprocessor instruction
                 if (*itr == "#") 

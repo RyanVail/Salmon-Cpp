@@ -47,16 +47,18 @@ u8 can_be_transformed_into(u8 type0, u8 type1)
 bool is_valid_name(std::string name)
 {
 	for (i32 i=0; i < INVALID_NAMES_SIZE; i++)
-		if (name == invalid_names[i]) { return false; }
+		if (name == invalid_names[i])
+			return false;
 
 	for (i32 i=0; i < TYPES_SIZE; i++)
-		if (name == types[i]) { return false; }
+		if (name == types[i])
+			return false;
 
 	return true;
 }
 
-// This checks if a string is a valid type
-i32 is_type(std::string possible_type)
+// This returns the type id of the inputed string
+i32 get_type(std::string possible_type)
 {
 	for (i32 i=0; i < TYPES_SIZE; i++)
 		if (types[i] == possible_type)
@@ -107,7 +109,8 @@ i32 get_str_num(std::string &possible_number)
 		value += (possible_number[i] - 48) * pow(10, -i + possible_number.size() - 1);
 	}
 	
-	if (possible_number[0] == '-') { value = -value; }
+	if (possible_number[0] == '-')
+		value = -value;
 
 	return value;
 }

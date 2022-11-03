@@ -4,12 +4,10 @@
  * operation that can be done in compile time it does it.
  */
 
-#ifndef INTERMEDIATE_OPTIMZATION_H
-#define INTERMEDIATE_OPTIMZATION_H
-
+#include<intermediate/optimization.hpp>
 #include<vector>
-#include<intermediate/intermediate.h>
-#include<typedefs.h>
+#include<intermediate/intermediate.hpp>
+#include<typedefs.hpp>
 #include<stack>
 
 /* ==== Current optimiztions ====
@@ -25,7 +23,7 @@
 
 // ==== Statics ====
 static std::vector<inter> *file;
-static std::stack<*inter> operand_stack;
+static std::stack<inter*> operand_stack;
 
 namespace intermediate_optimization
 {
@@ -53,28 +51,40 @@ namespace intermediate_optimization
         {
         case AND:
             return _first_value & _second_value;
+            break;
         case OR:
             return _first_value | _second_value;
+            break;
         case XOR:
             return _first_value ^ _second_value;
+            break;
         case LSL:
             return _first_value << _second_value;
+            break;
         case LSR:
             return _first_value >> _second_value;
+            break;
         case IS_EQUAL:
             return _first_value == _second_value;
+            break;
         case LESS:
             return _first_value < _second_value;
+            break;
         case LESS_EQUAL:
             return _first_value <= _second_value;
+            break;
         case GREATER:
             return _first_value > _second_value;
+            break;
         case GREATER_EQUAL:
             return _first_value >= _second_value;
+            break;
         case ADD:
             return _first_value + _second_value;
+            break;
         case SUB:
             return _first_value - _second_value;
+            break;
         case MUL:
             return _first_value * _second_value;
         }
@@ -109,5 +119,3 @@ namespace intermediate_optimization
         // operands.
     }
 }
-
-#endif

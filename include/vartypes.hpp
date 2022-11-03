@@ -29,7 +29,7 @@ u8 can_be_transformed_into(u8 type0, u8 type1);
 bool is_valid_name(std::string name);
 
 // This checks if a string is a valid type
-i32 is_type(std::string possible_type);
+i32 get_type(std::string possible_type);
 
 // This either returns the variable id or 0
 i32 into_id(std::string &string_type);

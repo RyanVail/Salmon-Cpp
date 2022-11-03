@@ -3,13 +3,11 @@
  * inputs we need to push the value in R0 into the stack and functions should
  * use fp so we don't need to tell the function if something is in R0.
  */
-
 /*
 #extern void std_print_int(u32)
 u32 p 4 $malloc$ =
 p 3 =
 */
-
 u32 a 3 =
 5 3 + if
 {
@@ -23,7 +21,6 @@ u32 a 3 =
 {
     a
 }
-
 /*
 fn main(u32 fizz)
 {

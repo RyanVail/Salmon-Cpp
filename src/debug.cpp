@@ -15,15 +15,16 @@ const std::string INTERS[] =
 "BREAK", "RETURN", "ASM" };
 
 // This takes in a intermediate id and prints out its data
-// TODO: This should use the local variable
+// TODO: This should use the local variables
+// TODO: This now needs more logic to dictate what to print
 void print_inter(inter to_print)
 {
 	std::cout << INTERS[to_print.id];
 	if (to_print.value)
 		std::cout << " : " << to_print.value;
-	if (to_print.get_func())
+	if (to_print.get_func() != nullptr)
 		std::cout << " : " << to_print.get_func()->name;
-	if (to_print.get_var())
+	if (to_print.get_var() != nullptr)
 		std::cout << " : " << to_print.get_var()->name;
 	std::cout << "\n";
 }
