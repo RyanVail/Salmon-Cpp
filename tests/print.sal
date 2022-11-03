@@ -1,8 +1,0 @@
-#extern null std_print_int(u32, u32); 
-
-u32 a 257 =
-
-1 while
-{
-    30 a -- $std_print_int$ a
-}

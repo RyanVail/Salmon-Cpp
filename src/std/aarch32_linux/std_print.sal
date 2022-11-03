@@ -1,0 +1,12 @@
+/*
+ * This is the to bo aarch32 standard library
+ */
+
+#include std_print.s;
+
+/*
+ * ==== External assembly functions ====
+ */
+
+/* Input one is what to print and two is the amount of bits to print. */
+#extern null std_print_bits(u32, u32);

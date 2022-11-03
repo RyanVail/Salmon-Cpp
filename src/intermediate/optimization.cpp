@@ -42,8 +42,8 @@ namespace intermediate_optimization
     inline i32 do_single_operation(i32 _value, u8 _inter_id);
     inline void on_operation(inter *inter_a, inter *inter_b, inter *operation);
 
-    // ==== Main function ====.
-    void optimzize_file(std::vector<inter> *_file)
+    // ==== Main function ====
+    void optimzize(std::vector<inter> *_file)
     {
         file = _file;
 

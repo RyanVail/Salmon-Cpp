@@ -43,9 +43,9 @@ std::vector<std::string> load_file(std::string file_name)
 }
 
 // This function processes command line options
-std::string process_options(i32 argc, char *argv[])
+std::vector<string> process_options(i32 argc, char *argv[])
 {
-	std::string file_name;
+	std::vector<std::string> files_name;
 	for (i32 i=1; i < argc; i++)
 	{
 		if (argv[i][0] == '-' && argv[i][1] == '-')
@@ -71,10 +71,7 @@ std::string process_options(i32 argc, char *argv[])
 		}
 		else 
 		{
-			if (file_name != "")
-				error::send_error("Expected one file name but got multiple.\n");
-
-			file_name = argv[i];
+			files.push_back(std::to_string(argv[i]));
 		}
 	}
 	return file_name;
@@ -83,7 +80,14 @@ std::string process_options(i32 argc, char *argv[])
 // This takes arguments
 i32 main(i32 argc, char *argv[])
 {
-	std::string file_name = process_options(std::move(argc), std::move(argv));
+	std::vector<std::string> file_names	 = process_options(std::move(argc), std::move(argv));
+
+	// TODO: This should check for duplicates in the file names.
+
+	// Files should be compiled sepeartly then be linked together we should
+	// only be able to include a file once
+
+	std::string file_name = file_names[0];
 
 	if (file_name == "")
 		error::send_error("Please enter a file name to compile or use -h to display help.\n");

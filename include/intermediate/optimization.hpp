@@ -24,7 +24,7 @@
 namespace intermediate_optimization
 {
     // This takes in a pointer to the static intermediate file and optimizes it.
-    void optimzize_file(std::vector<inter> file);
+    void optimzize(std::vector<inter> file);
 }
 
 #endif
