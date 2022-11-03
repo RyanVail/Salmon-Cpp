@@ -4,7 +4,7 @@
  * use fp so we don't need to tell the function if something is in R0.
  */
 /*
-#extern void std_print_int(u32)
+#extern u32 malloc(u32);
 u32 p 4 $malloc$ =
 p 3 =
 */

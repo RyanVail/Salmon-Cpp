@@ -36,7 +36,7 @@ VARIABLE DECLERATION -> VARIABLE REASIGNMENT
 	// If there is are no tokens refrencing the variable between these two we can just skip the inital decleration
 
 VARIABLE DECLERATION -> FUNC END
-	// If the variable is refrenced in any other tokens we can just remove the decleration
+	// If the variable is not refrenced in any other tokens we can just remove the decleration
 
 FUNC -> FUNC END
 	// We need to check if there is a return or an exit in every function after removing dead code 

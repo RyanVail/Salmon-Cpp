@@ -6,18 +6,20 @@
 #include<vector>
 #include<intermediate/intermediate.hpp>
 #include<typedefs.hpp>
+#include<error.hpp>
 
 /* ==== Current optimiztions ====
- * Constant evuations
- * 
- *
- *
+ * Constant evuations.
+ * Dead if and while statment removal.
+ * Always do constant if.
  */
 
-
- /* ==== To add ====
-  * Peephole shifting in place of multiplication
-  */
+/* ==== To add ====
+ * Dead code removal.
+ * Peephole shifting in place of multiplication.
+ * Register substitution.
+ * Const variables.
+ */
 
 namespace intermediate_optimization
 {
