@@ -1,0 +1,121 @@
+Data processing bit layout:
+    0000 00 0 0000 0 0000 0000 000000000000
+    ---- -- - ---- - ---- ---- ------------
+    AAAA BB C DDDD E FFFF GGGG HHHHHHHHHHHH
+
+    A - Condition
+    B - 00 - Means data processing
+    C - If the second operand is a shift or an immediate value
+    D - Operation code
+    E - If we are setting conditions
+    F - First register
+    G - Operation two
+    H - Operand two:
+        If C:
+            00000000 0000
+            -------- ----
+            IIIIIIII JJJJ
+        
+            I - Shift
+            J - Second register
+        else:
+            0000 00000000
+            ---- --------
+            IIII JJJJJJJJ
+        
+            I - Shift to immediate value
+            J - U8 immediate value
+
+Shift bit layout:
+    00000 00 0
+    ----- -- -
+    AAAAA BB C
+
+    A - Shift amount
+    B - Shift type
+    C - CONST
+
+    Shift bit layout register:
+    0000 0 00 1
+    AAAA B CC D
+
+    A - Shift register
+    B - CONST
+    C - Shift type
+    D - CONST
+
+Shift type:
+    00 - LSL
+    01 - LSR
+    10 - ASR
+    11 - ROR
+
+Branch:
+    0000 101 0 000000000000
+    ---- --- - ------------
+    AAAA BBB C DDDDDDDDDDDD
+
+    A - Condition
+    B - CONST
+    C - Wether to set link
+    D - Offset
+
+Load and store register:
+    0000 01 0 0 0 0 0 0 0000 0000 000000000000
+    ---- -- - - - - - - ---- ---- ------------
+    AAAA BB C D E F G H IIII JJJJ KKKKKKKKKKKK
+
+    A - Condition
+    B - CONST
+    C - If the offset is an immediate value
+    D - Pre(1) or post(0) incrament
+    E - Add(1) or subtract(0) offset from base
+    F - Transfer byte(1) or word(0)
+    G - Wether to write address into base or not
+    H - Load(1) or store(0)
+    I - Base register
+    J - Source/destination register
+    K - Offset:
+        If C:
+            00000000 0000
+            -------- ----
+            IIIIIIII JJJJ
+
+            I - Shift
+            J - Second register
+        else:
+            0000 00000000
+            ---- --------
+            IIII JJJJJJJJ
+
+            I - Shift to immediate value
+            J - U8 immediate value
+
+Load or store register, halfword or signed:
+    0000 000 0 0 0 0 0 0000 0000 0000 0 0 0 1 0000
+    ---- --- - - - - - ---- ---- ---- - - - - ----
+    AAAA BBB C D E F G HHHH IIII JJJJ K L M N OOOO
+
+    A - Condition
+    B - CONST
+    C - Pre(1) or post(0) incrament
+    D - Add(1) or subtract(0) offset from base
+    E - CONST
+    F - Wether to write address into base or not
+    G - Load(1) or store(0)
+    H - Base register
+    I - Source/destination register
+    J:
+        if K:
+            CONST
+        else:
+            High nibble of immediate offset
+    K - Register(0) or immediate(1)
+    L - Unsigned(0) or signed(1)
+    M - Byte(0) or halfword(1)
+    N - CONST
+    O:
+        if K:
+            Offset register
+        else:
+            Low nibble of immediate offset

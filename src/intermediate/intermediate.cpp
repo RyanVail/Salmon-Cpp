@@ -102,7 +102,7 @@ void function_call_inter_prep(function_token &_fn)
 // Returns true if it added something
 inline bool single_char_operator_into_inter(i8 operator_char)
 {
-	// TODO: These should make sure the operations are valid
+	// TODO: These should make sure the operations are valid typewise.
 	switch(operator_char)
 	{
 	case '!':
@@ -123,9 +123,9 @@ inline bool single_char_operator_into_inter(i8 operator_char)
 	case '^':
 		add_inter(XOR);
 		break;
-	case '=':
+	/*case '=':
 		add_inter(EQUAL);
-		break;
+		break;*/
 	case '<':
 		add_inter(LESS);
 		break;
@@ -147,6 +147,21 @@ inline bool single_char_operator_into_inter(i8 operator_char)
 	default:
 		return false;
 	}
+
+	top_operand_to_inter();
+	operand_stack.pop();
+	switch(operator_char)
+	{
+	case '!':
+	case '@':
+	case '%':
+		return true;
+		break;
+	default:
+		top_operand_to_inter();
+		operand_stack.pop();
+		return true;
+	}
 	return true;
 }
 
@@ -162,26 +177,64 @@ inline bool operator_into_inter(std::string *token_itr)
 
 	// ==== Simple string operators ====
 
+	// TODO: Replace these gotos with a switch statment.
 	if (*token_itr == "<<")
+	{
 		add_inter(LSL);
+		goto operators_into_inters_label;
+	}
 	if (*token_itr == ">>")
+	{
 		add_inter(LSR);
+		goto operators_into_inters_label;
+	}
 	if (*token_itr == "==")
+	{
 		add_inter(IS_EQUAL);
+		goto operators_into_inters_label;
+	}
 	if (*token_itr == "<=")
+	{
 		add_inter(LESS_EQUAL);
+		goto operators_into_inters_label;
+	}
 	if (*token_itr == "++")
+	{
 		add_inter(INCRAMENT);
+		goto operators_into_inters_label;
+	}
 	if (*token_itr == "--")
+	{
 		add_inter(DECRAMENT);
+		goto operators_into_inters_label;
+	}
+	if (*token_itr == ">=")
+	{
+		add_inter(GREATER_EQUAL);
+		goto operators_into_inters_label;
+	}
 	if (*token_itr == "return")
+	{
 		add_inter(RETURN);
+		goto operator_into_inter_label;
+	}
 	if (*token_itr == "break")
 		add_inter(BREAK);
 	if (*token_itr == "continue")
 		add_inter(CONTINUE);
-	if (*token_itr == ">=")
-		add_inter(GREATER_EQUAL);
+
+	goto no_operators_into_inter_label;
+
+	operators_into_inters_label:
+		top_operand_to_inter();
+		operand_stack.pop();
+
+	operator_into_inter_label:
+		top_operand_to_inter();
+		operand_stack.pop();
+
+	no_operators_into_inter_label:
+		//
 
 	// ==== Complex operators ====
 
