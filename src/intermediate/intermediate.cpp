@@ -14,6 +14,7 @@
 #include<error.hpp>
 #include<intermediate/typechecker.hpp>
 
+static operand::operand_def value_in_r0 = operand::operand_def(0, 0, 0, 0);
 static std::stack<operand::operand_def> operand_stack;
 static std::stack<inter> statment_stack;
 static std::vector<inter> inter_output;
@@ -52,7 +53,7 @@ inline void add_inter(u8 _id, u8 _type = 0, i32 _const = 0, variable_token *_var
 	else if (_func != nullptr)
 		inter_output.push_back(inter(_id, _func));
 	else
-		inter_output.push_back(inter(_id, _type, _const));
+		inter_output.push_back(inter(_id, _const, _type));
 }
 
 inline void add_statment(u8 _id)
@@ -63,15 +64,24 @@ inline void add_statment(u8 _id)
 // This takes the top operand off and generates its intermediate repersentation
 void top_operand_to_inter()
 {
+	if (operand_stack.empty())
+		error::send_error("Unexpected operation. Not enough operands.");
+
 	operand::operand_def top_operand = operand_stack.top();
 
 	u8 _type = top_operand.final_type;
-	
+
+	// If there is nothing in R0 we put this value into R0
+	if (!value_in_r0.final_type)
+		value_in_r0 = top_operand;
+
 	if (!top_operand.accessed_variable && !top_operand.called_function)
 		add_inter(CONST, _type, top_operand.const_value);
 
 	else if (top_operand.accessed_variable != nullptr)
 		add_inter(VARIABLE_ACCESS, top_operand.accessed_variable->type, 0, top_operand.accessed_variable);
+
+	operand_stack.pop();
 }
 
 // This takes the values needed for a function call off the operand stack
@@ -102,74 +112,74 @@ void function_call_inter_prep(function_token &_fn)
 // Returns true if it added something
 inline bool single_char_operator_into_inter(i8 operator_char)
 {
+	u8 _operator;
 	// TODO: These should make sure the operations are valid typewise.
 	switch(operator_char)
 	{
 	case '!':
-		add_inter(NOT);
+		_operator = NOT;
 		break;
 	case '@':
-		add_inter(GET);
+		_operator = GET;
 		break;
 	case '%':
-		add_inter(MEM_ADDRS);
+		_operator = MEM_ADDRS;
 		break;
 	case '&':
-		add_inter(AND);
+		_operator = AND;
 		break;
 	case '|':
-		add_inter(OR);
+		_operator = OR;
 		break;
 	case '^':
-		add_inter(XOR);
+		_operator = XOR;
 		break;
-	/*case '=':
-		add_inter(EQUAL);
-		break;*/
+	case '=':
+		_operator = EQUAL;
+		break;
 	case '<':
-		add_inter(LESS);
+		_operator = LESS;
 		break;
 	case '>':
-		add_inter(GREATER);
+		_operator = GREATER;
 		break;
 	case '+':
-		add_inter(ADD);
+		_operator = ADD;
 		break;
 	case '-':
-		add_inter(SUB);
+		_operator = SUB;
 		break;
 	case '/':
-		add_inter(DIV);
+		_operator = DIV;
 		break;
 	case '*':
-		add_inter(MUL);
+		_operator = MUL;
 		break;
 	default:
 		return false;
 	}
 
-	top_operand_to_inter();
-	operand_stack.pop();
-	switch(operator_char)
-	{
-	case '!':
-	case '@':
-	case '%':
-		return true;
-		break;
-	default:
+	if (!value_in_r0.final_type)
 		top_operand_to_inter();
-		operand_stack.pop();
+	if (operator_char == '!' || operator_char == '@' || operator_char == '%' || operator_char == '=')
+	{
+		add_inter(_operator);
+		if (operator_char == '=')
+			value_in_r0 = operand::operand_def(0,0,0,0);
 		return true;
 	}
-	return true;
+	else
+		if (operand_stack.size() > 0)
+			top_operand_to_inter();
+		add_inter(_operator);
+		return true;
 }
 
 // This handles turning operators into their intermediate repersentation
 // Returns true if it added something
 inline bool operator_into_inter(std::string *token_itr)
 {
-	if (single_char_operator_into_inter((*token_itr)[0]))
+	if (token_itr->size() == 1 && single_char_operator_into_inter((*token_itr)[0]))
 		return true;
 
 	u32 original_inter_output_size = inter_output.size();
@@ -181,42 +191,42 @@ inline bool operator_into_inter(std::string *token_itr)
 	if (*token_itr == "<<")
 	{
 		add_inter(LSL);
-		goto operators_into_inters_label;
+		goto operators_into_inter_label;
 	}
 	if (*token_itr == ">>")
 	{
 		add_inter(LSR);
-		goto operators_into_inters_label;
+		goto operators_into_inter_label;
 	}
 	if (*token_itr == "==")
 	{
 		add_inter(IS_EQUAL);
-		goto operators_into_inters_label;
+		goto operators_into_inter_label;
 	}
 	if (*token_itr == "<=")
 	{
 		add_inter(LESS_EQUAL);
-		goto operators_into_inters_label;
+		goto operators_into_inter_label;
 	}
 	if (*token_itr == "++")
 	{
 		add_inter(INCRAMENT);
-		goto operators_into_inters_label;
+		goto no_operators_into_inter_label;
 	}
 	if (*token_itr == "--")
 	{
 		add_inter(DECRAMENT);
-		goto operators_into_inters_label;
+		goto no_operators_into_inter_label;
 	}
 	if (*token_itr == ">=")
 	{
 		add_inter(GREATER_EQUAL);
-		goto operators_into_inters_label;
+		goto operators_into_inter_label;
 	}
 	if (*token_itr == "return")
 	{
 		add_inter(RETURN);
-		goto operator_into_inter_label;
+		goto operators_into_inter_label;
 	}
 	if (*token_itr == "break")
 		add_inter(BREAK);
@@ -225,16 +235,11 @@ inline bool operator_into_inter(std::string *token_itr)
 
 	goto no_operators_into_inter_label;
 
-	operators_into_inters_label:
-		top_operand_to_inter();
-		operand_stack.pop();
-
-	operator_into_inter_label:
-		top_operand_to_inter();
-		operand_stack.pop();
+	operators_into_inter_label:
+		if (!value_in_r0.final_type)
+			top_operand_to_inter();
 
 	no_operators_into_inter_label:
-		//
 
 	// ==== Complex operators ====
 
@@ -279,15 +284,14 @@ inline bool operator_into_inter(std::string *token_itr)
 	{
 		add_inter(RESET_RPN);
 		operand_stack = {};
+		value_in_r0 = operand::operand_def(0, 0, 0, 0);
 	}
 
 	if (is_str_num(*token_itr))
 	{
 		u8 _type = 7;
 		if (inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
-		{
 			_type = inter_output[inter_output.size()-1].type;
-		}
 		add_const_operand(_type, get_str_num(*token_itr));
 	}
 	
@@ -383,7 +387,8 @@ inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 		incraments++;
 		if (*(token_itr) != "{") 
 			error::send_error("Expected '{' after an if statment.\n");
-		top_operand_to_inter();
+		if (!value_in_r0.final_type)
+			top_operand_to_inter();
 		return true;
 	}
 	if (*token_itr == "else")
@@ -418,6 +423,7 @@ inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 	{
 		// TODO: Fix this ugly mess!
 		// TODO: If the variable is in the global scope we need to add it to .data
+		// TODO: This should get local variable
 		// If the last intermediate token was a type we are defining a variable
 		// Otherwise we check the symbol table and assume we are accessing a variable
 		if (inter_output.size() && inter_output[inter_output.size()-1].id == VARIABLE_TYPE)
@@ -427,8 +433,8 @@ inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 
 			current_stack -= types_size[inter_output[inter_output.size()-1].type];
 
+			add_variable_token(*token_itr, inter_output[inter_output.size()-1].type, current_owner, current_stack);
 			add_inter(VARIABLE_DECLERATION, 0, 0, get_variable_token(*token_itr));
-			add_variable_token(*token_itr, inter_output[inter_output.size()-1].get_var()->type, current_owner, current_stack);
 		}
 		else 
 		{
@@ -452,16 +458,18 @@ inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 std::vector<inter> file_into_inter(std::vector<std::string> file)
 {
 	current_owner = -1;
+	current_stack = 0;
 	for (std::vector<std::string>::iterator itr = file.begin(); itr != file.end(); itr++)
 	{
 		u32 incraments = 0;
 
 		#if DEBUG
-			std::cout << "#| " << *itr << "\n";
+			std::cout << operand_stack.size() << "\n" << "#| " << *itr << "\n";
 		#endif
 
 		if (*itr == "breakpoint")
 			goto finish_inter_output;
+
 		if (operator_into_inter(&*itr))
 			continue;
 

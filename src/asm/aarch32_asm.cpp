@@ -161,23 +161,26 @@ namespace aarch32_asm
             }
 
             // If the variable is 32 bit
-            if (is_normal(rpn_stack.top().final_type))
+            if (is_normal(rpn_stack.top().accessed_variable->type))
                 add_asm(in_func,
                         "STR R0, [SP,#" +
-                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
+                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().accessed_variable->type]) +
                             "]",
                         asm_file, asm_functions);
 
             // If variable is 8 bit
-            else if (is_char(rpn_stack.top().final_type))
+            else if (is_char(rpn_stack.top().accessed_variable->type))
                 add_asm(in_func,
                         "STRB R0, [SP,#" +
-                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().final_type]) +
+                            std::to_string(rpn_stack.top().accessed_variable->stack_location + types_size[rpn_stack.top().accessed_variable->type]) +
                             "]",
                         asm_file, asm_functions);
 
             else
-                error::send_error("Error while defining a variable's value.\n");
+                {
+                    std::cout << rpn_stack.top().accessed_variable->type << "\n";
+                    error::send_error("Error while defining a variable's value.\n");
+                }
 
             rpn_stack.pop();
             value_in_r0 = operand::operand_def(0, 0, 0, 0);

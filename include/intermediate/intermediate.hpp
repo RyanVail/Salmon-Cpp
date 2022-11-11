@@ -20,11 +20,11 @@ struct inter
 	// These are quality of life functions
 	function_token* get_func()
 	{
-		get_function_token("", value);
+		return get_function_token("", value);
 	}
 	variable_token* get_var()
 	{
-		get_variable_token("", value);
+		return get_variable_token("", value);
 	}
 };
 

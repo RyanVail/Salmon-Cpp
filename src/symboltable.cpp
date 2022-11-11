@@ -7,13 +7,20 @@
 #include<vartypes.hpp>
 #include<error.hpp>
 
+#if DEBUG
+	symbols* get_symbol_table()
+	{
+		return &symbol_table;
+	}
+#endif
+
 // This returns a pointer to the variable token by the same name/id or a null
 // pointer.
 variable_token* get_variable_token(std::string name, i32 id)
 {
 	for (variable_token &current_variable : symbol_table.variables)
 	{
-		if (id && current_variable.id == id)
+		if (name == "" && current_variable.id == id)
 			return &current_variable;
 		if (name != "" && current_variable.name == name)
 			return &current_variable;
@@ -83,6 +90,7 @@ void add_variable_token(std::string name, u8 type, i32 owner, i32 stack_location
 		error::send_error("The variable name: " + name + " is already used.");
 
 	variable_token new_token = variable_token(name, type, owner, stack_location);
+	new_token.id = symbol_table.variables.size();
 	symbol_table.variables.push_back(new_token);
 }
 

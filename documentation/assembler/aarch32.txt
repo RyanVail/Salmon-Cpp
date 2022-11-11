@@ -26,7 +26,7 @@ Data processing bit layout:
             I - Shift to immediate value
             J - U8 immediate value
 
-Shift bit layout:
+Shift bit layout immediate:
     00000 00 0
     ----- -- -
     AAAAA BB C
@@ -77,19 +77,19 @@ Load and store register:
     J - Source/destination register
     K - Offset:
         If C:
+            0000 00000000
+            ---- --------
+            IIII JJJJJJJJ
+
+            I - Shift to immediate value
+            J - u8 immediate value
+        else:
             00000000 0000
             -------- ----
             IIIIIIII JJJJ
 
             I - Shift
             J - Second register
-        else:
-            0000 00000000
-            ---- --------
-            IIII JJJJJJJJ
-
-            I - Shift to immediate value
-            J - U8 immediate value
 
 Load or store register, halfword or signed:
     0000 000 0 0 0 0 0 0000 0000 0000 0 0 0 1 0000

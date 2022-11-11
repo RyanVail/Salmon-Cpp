@@ -8,7 +8,7 @@
 #include<typedefs.hpp>
 
 // 0 is null type
-const i32 types_size[] = { 0, 4, 4 };
+const i32 types_size[] = { 0, 1, 1, 1, 1, 2, 2, 4, 4, 8, 8, 16, 16};
 
 // To be
 // const i32 types[] = { " ", "u32", "u16", "u8", "i32", "i16", "i8" };

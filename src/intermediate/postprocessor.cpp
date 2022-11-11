@@ -50,7 +50,7 @@ namespace postprocessor
                 else
                     // This adds the current type into the input of the function
                     if (!into_id(token))
-                        error::send_error("Unkown type in external function: " + token + ".\n");
+                        error::send_error("Unknown type in external function: " + token + ".\n");
                     _inputs.push_back(variable_token(into_id(token)));
                 itr++;
             }

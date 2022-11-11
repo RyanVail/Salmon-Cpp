@@ -47,7 +47,7 @@ namespace intermediate_optimization
     {
         file = _file;
 
-        for (inter current_inter = _file.begin(); current_inter != _file.end; current_inter++)
+        for (inter current_inter = *_file.begin(); current_inter != *_file.end(); current_inter++)
         {
             u8 _count = get_operation_count(*current_inter);
             if (_count)
@@ -107,9 +107,9 @@ namespace intermediate_optimization
                     // the end statment
                     while (true)
                     {
-                        if (*current_inter == file.end())
+                        if (current_inter == file.end())
                             error::send_error("Error: reached the end of the file while removing a dead statment.");
-                        if (*current_inter == _end_statment_id)
+                        if (current_inter->id == _end_statment_id)
                             break;
                     }
                     continue;
@@ -127,7 +127,7 @@ namespace intermediate_optimization
                 output_file.push_back(*operand_stack.top());
                 operand_stack.pop();
             save_inter:
-                output_file.push_back(*current_inter);
+                output_file.push_back(current_inter);
         }
     }
 

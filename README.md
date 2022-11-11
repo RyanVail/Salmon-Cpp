@@ -90,6 +90,8 @@ This is a compiler for an esoteric-like programming language that is proably goi
 
 # Problems and TODOs
 - ## General
+    - ### Stuff like code at the end of two if statments that get executed no matter what needs to be optimized some how.
+    - ### Statment is spelled wrong through the entire repo same with incrament.
     - ### Sometimes constants are signed during compilation other times they aren't which is bad
     - ### There is no support for signed types
     - ### Add namespaces to all files so as to not clutter up the global space

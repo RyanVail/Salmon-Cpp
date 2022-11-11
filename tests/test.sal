@@ -4,12 +4,18 @@
  * use fp so we don't need to tell the function if something is in R0.
  */
 /*
-#extern u32 malloc(u32);
-u32 p 4 $malloc$ =
-p 3 =
+    /* This is a function that will be added to this file. */
+    #intern u32 to_be_defined(u32 a, u16 b);
+    #extern u32 to_be_linked(u32, u32);
+    */
+/*
+    #extern u32 malloc(u32);
+    u32 p 4 $malloc$ =
+    p 3 =
 */
 u32 a 3 =
-5 3 + if
+1 2 +
+if
 {
     2 34 + ;
 }
@@ -22,16 +28,16 @@ u32 a 3 =
     a
 }
 /*
-fn main(u32 fizz)
-{
-    fizz ++ ;
-}
+    fn main(u32 fizz)
+    {
+        fizz ++ ;
+    }
 */
 /*
-3n-1
-u32 a 7 = while { a 1 & if { a 1 a 3 * + = } a 1 & ! if { a a 2 * = } a 1 != }
+    3n-1
+    u32 a 7 = while { a 1 & if { a 1 a 3 * + = } a 1 & ! if { a a 2 * = } a 1 != }
 */
 /*
-fib
-u32 a 1 = u32 b 1 = u32 c 1 = while { c a = a a b + = b c = a }
+    fib
+    u32 a 1 = u32 b 1 = u32 c 1 = while { c a = a a b + = b c = a }
 */

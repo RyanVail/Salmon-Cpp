@@ -5,11 +5,13 @@
 #include<vector>
 #include<math.h> // This is just used for pow it might be better to rewrite it
 
-// 0 is null type
-const std::vector<std::string> types = { "null", "bool", "ibool", "u8", "i8", "u16", "i16", "u32", "i32", "u64", "i64", "u128", "i128" };
 #define TYPES_SIZE 13
-const std::vector<std::string> invalid_names = { "if", "while", "else", "continue", "break", "return" };
+const std::vector<std::string> types = { "null", "bool", "ibool", "u8", "i8",
+"u16", "i16", "u32", "i32", "u64", "i64", "u128", "i128" };
+
 #define INVALID_NAMES_SIZE 6
+const std::vector<std::string> invalid_names = { "if", "while", "else",
+"continue", "break", "return" };
 
 // To be
 // const i32 types[] = { " ", "u32", "u16", "u8", "i32", "i16", "i8" };
@@ -81,7 +83,7 @@ i32 into_id(std::string &string_type)
 std::string id_into_string(i32 var_id)
 {
 	if (var_id >= TYPES_SIZE || var_id <= 0)
-		return NULL;
+		return "";
 
 	return types[var_id];
 }

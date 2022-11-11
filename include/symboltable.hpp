@@ -3,6 +3,7 @@
 #ifndef SYMBOLTABLE_HPP
 #define SYMBOLTABLE_HPP
 
+#include<main.hpp>
 #include<string>
 #include<vector>
 #include<iostream>
@@ -49,6 +50,10 @@ struct function_token
 
 // The static symbol table
 static symbols symbol_table;
+
+#if DEBUG
+	symbols* get_symbol_table();
+#endif
 
 // This returns a pointer to the variable token by the same name/id or a null pointer
 variable_token* get_variable_token(std::string name, i32 id = 0);

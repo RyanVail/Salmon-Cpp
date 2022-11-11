@@ -43,9 +43,9 @@ std::vector<std::string> load_file(std::string file_name)
 }
 
 // This function processes command line options
-std::vector<string> process_options(i32 argc, char *argv[])
+std::vector<std::string> process_options(i32 argc, char *argv[])
 {
-	std::vector<std::string> files_name;
+	std::vector<std::string> file_names;
 	for (i32 i=1; i < argc; i++)
 	{
 		if (argv[i][0] == '-' && argv[i][1] == '-')
@@ -71,10 +71,10 @@ std::vector<string> process_options(i32 argc, char *argv[])
 		}
 		else 
 		{
-			files.push_back(std::to_string(argv[i]));
+			file_names.push_back(std::string(argv[i]));
 		}
 	}
-	return file_name;
+	return file_names;
 }
 
 // This takes arguments

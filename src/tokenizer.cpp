@@ -1,5 +1,5 @@
 /* This file handles tokenizing a file making further processing a simplier job */
-
+/* TODO: This shouldn't tokenize things in quotes. */
 #include<vector>
 #include<string>
 #include<iostream>
