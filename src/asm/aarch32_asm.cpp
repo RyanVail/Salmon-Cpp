@@ -288,10 +288,7 @@ namespace aarch32_asm
                     break;
                 case WHILE_BEGIN:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
-                    {
                         std::cout << "Warning: Something should be on the RPN stack before starting a while statment.\nContinuing...\n";
-                        break;
-                    }
                     else
                     {
                         if (!value_in_r0.final_type) // If R0 isn't being used already we off load the value on the stack into R0
@@ -312,10 +309,7 @@ namespace aarch32_asm
                     break;
                 case IF_BEGIN:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
-                    {
                         std::cout << "Warning: Something should be on the RPN stack before starting an if statment.\nContinuing...\n";
-                        break;
-                    }
                     else
                     {
                         if (!value_in_r0.final_type) // If R0 isn't being used already we off load the value on the stack into R0
@@ -337,6 +331,7 @@ namespace aarch32_asm
                     // TODO: This should scale based on the # of registers used
                     add_asm(in_func, RESET_RPN_ASM_NORMAL, asm_file, asm_functions);
                     value_in_r0 = operand::operand_def(0, 0, 0, 0);
+                    break;
                 case IF_END:
                     add_asm(in_func, statment_stack.top().name, asm_file, asm_functions);
                     statment_stack.pop();
@@ -345,7 +340,7 @@ namespace aarch32_asm
                     if (rpn_stack.empty() && !value_in_r0.final_type)
                     {
                         std::cout << "Warning: Something should be on the RPN stack before ending a while statment.\nContinuing...\n";
-                        break;
+                        continue;
                     }
 
                     if (!value_in_r0.final_type)

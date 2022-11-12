@@ -389,6 +389,7 @@ inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 			error::send_error("Expected '{' after an if statment.\n");
 		if (!value_in_r0.final_type)
 			top_operand_to_inter();
+		value_in_r0 = operand::operand_def(0,0,0,0);
 		return true;
 	}
 	if (*token_itr == "else")

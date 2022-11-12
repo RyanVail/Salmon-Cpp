@@ -624,47 +624,9 @@ static inline void process_data(u32 i, enum data_process_operation operation)
     process_data_return_no_shift:
         result += _second_immediate;
     printf("%u\n", result);
-    /*
-     * This handles four situations
-     * 1: One register and one other operand
-     * 2: One reigster, one operand, and one shift
-     * 3: One register and two operands
-     * 4: One register, two operands, and one shift
-     * 
-     * 1 - We place the destination register into operand one and the first
-     * operand goes into the second operand.
-     * 2 - Same as one.
-     * 3 - Set the shift to nothing.
-     * 4 - No processing.
-     */
-    //_first_reg = get_reg();
-    /* 
-     * ADD R0, #24
-     * ADD R0, R0, R1
-     * ADD R0, R0, LSL R0
-     * ADD R0, R0, R0, LSL R0
-     * 
-     * MVN R0, R1
-     * MOV R0, R3
-     * ADD R2, #142
-     * 
-     * ADD AA, BB, CC, DD, EE
-     * 
-     * A - Destination register
-     * B - Source register
-     * C - Second souce register
-     * D - Shift
-     * E - Register to shift from or immediate shift
-     * 
-     * ADD R0, R1, R1, LSL R0
-     */
 }
 static inline void process_mem(u32 i, bool load_or_store)
 {
-    /*
-     * ldr r0, [sp, #-4]!
-     * ldr r0, [sp, r0]
-     */
     enum reg _destination_reg = no_reg;
     enum reg _source_reg = no_reg;
     enum reg _offset_reg = no_reg;
@@ -769,7 +731,6 @@ static inline void process_mem(u32 i, bool load_or_store)
     // 23 - Positive or negative
     // 24 - Pre / Post indexing
     // 25 - If offset is immediate
-
     result |= _destination_reg << 12;
     result |= _source_reg << 16;
     if (_offset_reg == no_reg)
@@ -807,36 +768,20 @@ static inline void process_clz(u32 i)
     printf("%u\n", result);
 }
 
-/*int main()
-{
-    // TODO "_asm" should have padding of '\0's on the end
-    char** _asm_ = malloc(sizeof(char) * 64);
-    if (_asm_ == 0)
-    {
-        printf("Failed to allocate memory.\n");
-        exit(-1);
-    }
-    // ldr r0, [r0, r1]!
-    char* temp = "ldrb";
-    _asm_[0] = temp;
-    temp = "r0";
-    _asm_[1] = temp;
-    temp = "[";
-    _asm_[2] = temp;
-    temp = "r0";
-    _asm_[3] = temp;
-    temp = "r1";
-    _asm_[4] = temp;
-    temp = "]";
-    _asm_[5] = temp;
-    temp = "!";
-    _asm_[6] = temp;
-    //temp = "r2";
-    //_asm_[4] = temp;
+// int main()
+// {
+//     // TODO "_asm" should have padding of '\0's on the end
+//     /*char** _asm_[] = malloc(sizeof(char) * 64);
+//     if (_asm_ == 0)
+//     {
+//         printf("Failed to allocate memory.\n");
+//         exit(-1);
+//     }*/
+//     char* _asm_[] = {"ldr", "r0", "[", "r0", "r1", "]", "!"};
 
-    // _asm = _asm_;
-    // printf("%i\n", get_12bit_immediate(0));
-    asm_into_instructions(1, _asm_);
-    free(_asm_);
-    return 1;
-}*/
+//     // _asm = _asm_;
+//     // printf("%i\n", get_12bit_immediate(0));
+//     asm_into_instructions(1, _asm_);
+//     //free(_asm_);
+//     return 1;
+// }
