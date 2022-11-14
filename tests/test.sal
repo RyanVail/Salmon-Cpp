@@ -13,11 +13,14 @@
     u32 p 4 $malloc$ =
     p 3 =
 */
-u32 a 3 =
-1 2 +
-if
-{
-    2 1 + ;
+u32 a 1 =
+u32 b 1 =
+u32 c 1 =
+1 while {
+    c a =
+    a a b + =
+    b c = ;
+    1
 }
 
 if
@@ -40,7 +43,7 @@ if
 */
 /*
     3n-1
-    u32 a 7 = while { a 1 & if { a 1 a 3 * + = } a 1 & ! if { a a 2 * = } a 1 != }
+    u32 a 7 = 1 while { a 1 & if { a 1 a 3 * + = } a 1 & ! if { ; a a 2 * = } a 1 == ! }
 */
 /*
     fib
