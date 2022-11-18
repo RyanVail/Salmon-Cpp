@@ -5,8 +5,8 @@ set(CMAKE_CXX_REQUIRED True)
 
 set(CMAKE_BUILD_TYPE Debug)
 # if(NOT CMAKE_BUILD_TYPE)
-# 	set(CMAKE_BUILD_TYPE Release)
-# 	set(CMAKE_CXX_FLAGS_RELEASE "-O2")
+#	set(CMAKE_BUILD_TYPE Release)
+# 	set(CMAKE_CXX_FLAGS_RELEASE "-Os")
 # endif()
 
 

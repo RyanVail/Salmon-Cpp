@@ -4,6 +4,9 @@
 #include<string>
 #include<vartypes.hpp>
 #include<intermediate/intermediate.hpp>
+#include<main.hpp>
+
+#if DEBUG
 
 const std::string INTERS[] = 
 { "TYPE", "VARIABLE_DECLERATION", "VARIABLE_REASIGNMENT",
@@ -62,3 +65,5 @@ void print_symbol_table()
 		<< " |stack space needed| " << current_function.stack_space_needed
 		<< " |id| " << current_function.id << "\n";
 }
+
+#endif

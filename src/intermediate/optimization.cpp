@@ -1,7 +1,7 @@
 /* ==== Optimization pipeline ====
  *
- * 1. This makes another pass through the intermediate stack and if there is an
- * operation that can be done in compile time it does it.
+ * 1. This makes another pass through the intermediates and does anything that
+ * be done during compile time.
  */
 
 #include<intermediate/optimization.hpp>

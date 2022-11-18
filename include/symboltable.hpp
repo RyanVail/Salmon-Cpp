@@ -43,7 +43,7 @@ struct function_token
 {
 	std::string name;
 	i32 id;
-	std::vector<variable_token> inputs; // This is a vector of the variables the function takes as an input
+	std::vector<variable_token*> inputs; // This is a vector of the variables the function takes as an input
 	u8 output; // This is the output type
 	i32 stack_space_needed = 0; // The amount of bytes needed of stack space
 };
@@ -72,7 +72,7 @@ function_token* get_function_token(std::string name, i32 id = 0);
 void add_variable_token(std::string name, u8 type, i32 owner, i32 stack_location);
 
 // This adds a function to the list of functions based on name, returns, and inputs
-void add_function_token(std::string _name, u8 _output, std::vector<variable_token> _inputs);
+void add_function_token(std::string _name, u8 _output, std::vector<variable_token*> _inputs);
 
 // This returns the stack space needed for the specified function id or global scope
 i32 get_stack_space_needed(i32 id);

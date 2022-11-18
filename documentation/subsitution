@@ -1,0 +1,50 @@
+This keeps track of a number within a single scope.
+
+If we use a single number a lot we add it to the table. If we are compiling for
+arm and the number is above the limit for a 12 bit rotation we always add it to
+the table.
+
+a += 1
+b -= 3
+a += 2
+b += a
+func(a,b);
+
+We make profiles of variable and if they're used in a function call or anything
+like that we compile their profile down. If we are in a high optimization level
+we compile down other variables profiles into our profile then simplify.
+|---a---| +1 |
+|---a---| +2 |
+|============|
+|---a---| +3 |
+
+|---b---| -3 |
+|---b---| +a |
+|=============|
+|---b---| a-3 |
+|==============|
+|---b---| a+3-3|
+|==============|
+|---b---| a |
+
+
+
+
+ADD R0, #3
+ADD R1, R0, #-3
+
+a += 3
+b += 3 - a
+
+|-----var-----|-num-|
+|===================|
+|------a------|--4--|
+|--*func(a)*--|--2--|
+|---func(a)---|--1--|
+|===================|
+
+LDR R0, [SP, #0]
+BL func
+ADD R0, #1
+BL func
+BL func

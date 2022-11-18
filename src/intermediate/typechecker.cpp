@@ -8,7 +8,7 @@
 
 /*
  * first bit is signed flag
- * 0 0 0 0 0 0 0 0
+ * 1 0 0 0 0 0 0 0
  *
  * bool
  * 0 1 0 0 0 0 0 0
@@ -49,7 +49,8 @@ namespace typechecker
     u8 can_be_converted_to(u8 type_a, u8 type_b)
     {
         // If one of these types is signed and the other isn't or "type_b" has more bits than "type_a"
-        if (type_a & 1 != type_a & 1 || type_a > type_b)
+        if ((type_a & 1) != (type_b & 1) || type_a > type_b)
             return 1;
+        return 0;
     }
 }

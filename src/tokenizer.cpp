@@ -3,6 +3,7 @@
 #include<vector>
 #include<string>
 #include<iostream>
+#include<typedefs.hpp>
 
 #define blank_characters_len 4
 const i8 blank_characters[] = { '\n', '\r', '\t', ' ' };

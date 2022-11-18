@@ -20,13 +20,12 @@ namespace aarch32_asm
     // Operate on only R0
     #define NOT_ASM_BOOL "EOR R0, R0"
     #define NOT_ASM_INT "CLZ R0, R0\nLSR R0, #5"
-    #define GET_ASM_NORMAL "LDR R0, [R0]"
-    #define GET_ASM_CHAR "LDRB R0, [R0]"
+    #define GET_ASM_NORMAL "LDR R0,[R0]"
+    #define GET_ASM_CHAR "LDRB R0,[R0]"
     #define INCRAMENT_ASM_NORMAL "ADD R0, #1"
     #define DECRAMENT_ASM_NORMAL "SUB R0, #1"
     // IF_BEGIN
     // WHILE_BEGIN
-    #define RETURN_ASM_NORMAL "BX LR"
     // Operate on R0 & R1
     #define LESS_EQUAL_ASM_NORMAL "CMP R0, R1\nMOVLE R0, #0\nMOVGT R0, #1"
     #define LESS_ASM_NORMAL "CMP R0, R1\nMOVLQ R0, #0\nMOVGT R0, #1"
@@ -56,7 +55,7 @@ namespace aarch32_asm
     void add_asm(bool in_func, std::string asm_to_add, std::vector<std::string> &asm_file, std::vector<std::string> &asm_functions)
     {
         if (in_func)
-            asm_functions[asm_functions.size() - 1] += asm_to_add;
+            asm_functions.push_back(asm_to_add);
         else
             asm_file.push_back(asm_to_add);
     }
@@ -76,7 +75,7 @@ namespace aarch32_asm
         if (current_def.accessed_variable != 0)
             return "LDR R" +
                    std::to_string(_register) +
-                   ", [SP, #" +
+                   ", [SP,#" +
                    std::to_string(current_def.accessed_variable->stack_location + types_size[current_def.accessed_variable->type]) +
                    "]";
 
@@ -177,10 +176,10 @@ namespace aarch32_asm
                         asm_file, asm_functions);
 
             else
-                {
-                    std::cout << rpn_stack.top().accessed_variable->type << "\n";
-                    error::send_error("Error while defining a variable's value.\n");
-                }
+            {
+                std::cout << rpn_stack.top().accessed_variable->type << "\n";
+                error::send_error("Error while defining a variable's value.\n");
+            }
 
             rpn_stack.pop();
             value_in_r0 = operand::operand_def(0, 0, 0, 0);
@@ -259,7 +258,7 @@ namespace aarch32_asm
         // std::vector<std::string> asm_data;
         // ^^^ Currently not used
         // TODO: These variables should all be static to make inline function calls simpler
-        std::vector<std::string> asm_file = {".ASM\n.GLOBAL fn_main\n.TEXT\nfn_end:\nMOV R7, #1\nSWI 0\nfn_main:\nSUB SP, #" + std::to_string(get_stack_space_needed(-1))};
+        std::vector<std::string> asm_file = {".ASM\n.GLOBAL fn_main\n.TEXT\nfn_end:\nMOV R7, #1\nSWI 0\nfn_main:\nSUB SP,#" + std::to_string(get_stack_space_needed(-1))};
         std::stack<operand::operand_def> rpn_stack;
         std::stack<statment_defintion> statment_stack; // 0 -> function call, 1 -> while, 2 -> if, 3 -> return, 4 -> break, 5-> continue
         u32 current_statment_id = 0;          // This is just a little bit of padding added to the end of branch points to make sure they are seperate                          ^^^^^^^^^^^^^
@@ -298,7 +297,7 @@ namespace aarch32_asm
                         }
                         value_in_r0 = operand::operand_def(0, 0, 0, 0);
                     }
-                    statment_stack.push(statment_defintion(1, std::to_string(current_statment_id)));
+                    statment_stack.push(statment_defintion(2, std::to_string(current_statment_id)));
                     add_asm(in_func,
                             "while_start_" +
                                 std::to_string(current_statment_id) +
@@ -338,12 +337,8 @@ namespace aarch32_asm
                     break;
                 case WHILE_END:
                     if (rpn_stack.empty() && !value_in_r0.final_type)
-                    {
                         std::cout << "Warning: Something should be on the RPN stack before ending a while statment.\nContinuing...\n";
-                        continue;
-                    }
-
-                    if (!value_in_r0.final_type)
+                    else if (!value_in_r0.final_type)
                         add_asm(in_func, value_into_asm(rpn_stack.top(), 0), asm_file, asm_functions);
 
                     add_asm(in_func,
@@ -358,7 +353,10 @@ namespace aarch32_asm
                 case FUNC_END:
                     // TODO: Add some more things like adding back SP
                     add_asm(in_func,
-                            "BX LR", asm_file, asm_functions);
+                            "ADD SP,#" +
+                                std::to_string(get_function_token(statment_stack.top().name)->stack_space_needed) +
+                                "\nBX LR",
+                            asm_file, asm_functions);
                     statment_stack.pop();
                     in_func = false;
                     break;
@@ -368,7 +366,7 @@ namespace aarch32_asm
                         error::send_error("The function " + current_function->name + " takes more than eight values which is not valid.\n");
                     current_register = 0; // The current register we are offloading the inputs of the function into
                     // This offloads the needed values as input from the stack into the registers
-                    for (variable_token current_variable : current_function->inputs)
+                    for (variable_token* current_variable : current_function->inputs)
                     {
                         if (rpn_stack.empty() && !value_in_r0.final_type)
                             error::send_error("Expected something to be one the stack while calling function: " + current_function->name + "\n");
@@ -377,20 +375,18 @@ namespace aarch32_asm
                         if (value_in_r0.final_type)
                         {
                             // If we can't transform R0 into the function input type
-                            if (can_be_transformed_into(value_in_r0.final_type, current_variable.type))
+                            if (can_be_transformed_into(value_in_r0.final_type, current_variable->type))
                             {
                                 std::cout << "Cannot ";
-                                if (can_be_transformed_into(value_in_r0.final_type, current_variable.type) == 0)
-                                {
+                                if (can_be_transformed_into(value_in_r0.final_type, current_variable->type) == 0)
                                     std::cout << "explicitly ";
-                                }
-                                error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
+                                error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable->type) + ".\n");
                             }
                             current_register++;
                             continue; // If we can transform the value in R0 into the input type we just continue and incrament "current_register"
                         }
                         // If the current thing on the stack can be transformed into the input type
-                        if (!can_be_transformed_into(rpn_stack.top().final_type, current_variable.type))
+                        if (!can_be_transformed_into(rpn_stack.top().final_type, current_variable->type))
                         {
                             add_asm(in_func, value_into_asm(rpn_stack.top(), current_register), asm_file, asm_functions);
                             rpn_stack.pop();
@@ -399,59 +395,52 @@ namespace aarch32_asm
                         else
                         {
                             std::cout << "Cannot ";
-                            if (can_be_transformed_into(rpn_stack.top().final_type, current_variable.type) == 0)
-                            {
+                            if (can_be_transformed_into(rpn_stack.top().final_type, current_variable->type) == 0)
                                 std::cout << "explicitly ";
-                            }
-                            error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable.type));
+                            error::send_error("transform type " + id_into_string(rpn_stack.top().final_type) + " into " + id_into_string(current_variable->type) + ".\n");
                         }
                     }
                     // This actually calls the function
                     add_asm(in_func,
-                            "BL func_" +
-                                current_inter.get_func()->id,
+                            "BL " +
+                                current_inter.get_func()->name,
                             asm_file, asm_functions);
                     break;
                 case FUNC_BEGIN:
                     if (!statment_stack.empty() || in_func)
                         error::send_error("Functions can only be defined in the global scope.\n");
                     if (!rpn_stack.empty())
-                    {
                         error::send_error("RPN stack should be empty before defining a function.\n");
-                    }
                     in_func = true;
-                    statment_stack.push(statment_defintion(0, "fn_" + current_inter.get_func()->id));
-                    asm_functions.push_back("");
+                    statment_stack.push(statment_defintion(0, current_inter.get_func()->name));
                     add_asm(in_func,
-                            "fn_" +
-                                std::to_string(current_inter.get_func()->id) +
+                                current_inter.get_func()->name +
                                 ":\n" +
-                                "SUB SP, #" +
+                                "SUB SP,#" +
                                 std::to_string(current_inter.get_func()->stack_space_needed),
                             asm_file, asm_functions);
                     current_register = 0;
-                    for (variable_token &current_variable : current_inter.get_func()->inputs)
+                    for (variable_token* current_variable : current_inter.get_func()->inputs)
                     {
                         // If this is 32 bit
-                        if (is_normal(current_variable.type))
+                        if (is_normal(current_variable->type))
                         {
                             add_asm(in_func,
                                     "STR R" +
                                         std::to_string(current_register) +
                                         ", [SP,#" +
-                                        std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
-                                        "]" +
-                                        std::to_string(current_inter.get_func()->stack_space_needed),
+                                        std::to_string(current_variable->stack_location + types_size[current_variable->type]) +
+                                        "]",
                                     asm_file, asm_functions);
                         }
                         // If this is 8 bit
-                        else if (is_char(current_variable.type))
+                        else if (is_char(current_variable->type))
                         {
                             add_asm(in_func,
                                     "STRB R" +
                                         std::to_string(current_register) +
                                         ", [SP,#" +
-                                        std::to_string(current_variable.stack_location + types_size[current_variable.type]) +
+                                        std::to_string(current_variable->stack_location + types_size[current_variable->type]) +
                                         "]" +
                                         std::to_string(current_inter.get_func()->stack_space_needed),
                                     asm_file, asm_functions);
@@ -466,7 +455,6 @@ namespace aarch32_asm
         return asm_file;
     }
 }
-#undef RETURN_ASM_NORMAL
 #undef NOT_ASM_BOOL
 #undef NOT_ASM_INT
 #undef GET_ASM_NORMAL

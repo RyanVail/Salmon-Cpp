@@ -8,7 +8,7 @@ namespace error
 {
     inline void send_error(std::string error_message)
     {
-        std::cout << error_message << "\n";
+        std::cout << error_message;
         exit(-1);
     }
 }

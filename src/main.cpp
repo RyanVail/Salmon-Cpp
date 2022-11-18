@@ -45,6 +45,8 @@ std::vector<std::string> load_file(std::string file_name)
 // This function processes command line options
 std::vector<std::string> process_options(i32 argc, char *argv[])
 {
+	if (argc <= 1)
+		error::send_error("Please enter a file name to compile or use -h to display help.\n");
 	std::vector<std::string> file_names;
 	for (i32 i=1; i < argc; i++)
 	{
@@ -70,9 +72,7 @@ std::vector<std::string> process_options(i32 argc, char *argv[])
 			}
 		}
 		else 
-		{
 			file_names.push_back(std::string(argv[i]));
-		}
 	}
 	return file_names;
 }
@@ -83,6 +83,7 @@ i32 main(i32 argc, char *argv[])
 	std::vector<std::string> file_names	 = process_options(std::move(argc), std::move(argv));
 
 	// TODO: This should check for duplicates in the file names.
+	// TODO: This should change functions based on file extension.
 
 	// Files should be compiled sepeartly then be linked together we should
 	// only be able to include a file once

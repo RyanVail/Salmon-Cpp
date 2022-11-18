@@ -27,7 +27,7 @@ void postprocessor_add_inter(inter _inter)
 	inter_output.push_back(_inter);
 }
 
-// These are inline functions that improve readability a bit by abstraction
+// These are inline functions that improve readability
 inline void add_const_operand(u8 _type, u32 _const)
 {
 	operand_stack.push(operand::operand_def(_const, 0, 0, _type));
@@ -65,7 +65,7 @@ inline void add_statment(u8 _id)
 void top_operand_to_inter()
 {
 	if (operand_stack.empty())
-		error::send_error("Unexpected operation. Not enough operands.");
+		error::send_error("Unexpected operation. Not enough operands.\n");
 
 	operand::operand_def top_operand = operand_stack.top();
 
@@ -92,7 +92,7 @@ void function_call_inter_prep(function_token &_fn)
 
 	for (u32 i=0; i < _fn.inputs.size(); i++)
 	{
-		u8 _can_be = typechecker::can_be_converted_to(operand_stack.top().final_type, _fn.inputs[i].type);
+		u8 _can_be = typechecker::can_be_converted_to(operand_stack.top().final_type, _fn.inputs[i]->type);
 		if (_can_be)
 		{
 			std::cout << "Cannot ";
@@ -100,7 +100,7 @@ void function_call_inter_prep(function_token &_fn)
 			if ((_can_be) == 0)
 				std::cout << "explicitly ";
 
-			error::send_error("transform type " + id_into_string(operand_stack.top().final_type) + " into " + id_into_string(_fn.inputs[i].type));
+			error::send_error("transform type " + id_into_string(operand_stack.top().final_type) + " into " + id_into_string(_fn.inputs[i]->type) + ".\n");
 		}
 		top_operand_to_inter();
 	}
@@ -165,7 +165,15 @@ inline bool single_char_operator_into_inter(i8 operator_char)
 	{
 		add_inter(_operator);
 		if (operator_char == '=')
+		{
 			value_in_r0 = operand::operand_def(0,0,0,0);
+			if (inter_output[inter_output.size()-3].id != VARIABLE_DECLERATION)
+			{
+				if (operand_stack.size() < 1)
+					error::send_error("Expected two operands before an equal sign.\n");
+				top_operand_to_inter();
+			}
+		}
 		return true;
 	}
 	else
@@ -238,6 +246,7 @@ inline bool operator_into_inter(std::string *token_itr)
 	operators_into_inter_label:
 		if (!value_in_r0.final_type)
 			top_operand_to_inter();
+		top_operand_to_inter();
 
 	no_operators_into_inter_label:
 
@@ -249,23 +258,6 @@ inline bool operator_into_inter(std::string *token_itr)
 	// TODO: Test if this still works
 	if (*token_itr == "#")
 		postprocessor::process_instruction(token_itr, inter_output);
-
-	if (*token_itr == "$")
-	{
-		// itr is over the function name now
-		token_itr++;
-
-		if (!get_function_token(*token_itr))
-			error::send_error("Unknown function: " + *token_itr + ".\n");
-		
-		function_call_inter_prep(*get_function_token(*token_itr));
-
-		// Skips the next '$' if there is one
-		if (*(token_itr+1) == "$")
-			token_itr += 1;
-
-		add_function_call_operand(get_function_token(*token_itr));
-	}
 
 	if (*token_itr == "}")
 	{
@@ -303,27 +295,20 @@ inline bool operator_into_inter(std::string *token_itr)
 
 // TODO: This should set the function's inputs
 // TODO: This should read the output typef
-inline void function_into_inter(std::string *token_itr)
+inline void function_into_inter(std::string* token_itr, u32 &incraments)
 {
+	std::string* initial_itr = token_itr;
 	u8 _output;
+	std::vector<variable_token*> _inputs;
+
 	if(current_owner != -1) 
 		error::send_error("Function defintion inside another function is not valid.\n");
 	if(!operand_stack.empty())
 		error::send_error("Expected the nothing on the RPN stack before a function definiton.\n");
 
 	token_itr++;
-	std::string name = (*token_itr).substr(0, (*token_itr).find('(') );
-	// TODO: We should read the return type of the function here
 
-	if(!is_str_letters(name)) 
-		error::send_error("The function name: " + name + " contains invalid characters.\n");
-	if(get_function_token(name)) 
-		error::send_error("The function name: " + name + " is already used.\n");
-	if(!is_valid_name(name))
-		error::send_error("The function name: " + name + " isn't valid.\n");
-
-	add_function_token(name, _output, {});
-	symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
+	// symbol_table.functions[symbol_table.functions.size()-1].stack_space_needed = 0;
 	// This reads through the input variables of the function
 	u8 current_type = 0; // The type of the current variable
 	i32 stack_space_needed = 0; // The stack space needed for all the input variables to the function
@@ -337,23 +322,19 @@ inline void function_into_inter(std::string *token_itr)
 			token_itr++; 
 			continue;
 		}
-		if (token == ")")
-			break;
 
-		// TODO: Add default varaible assignment
-		if (token == "=")
-			error::send_error("Default function input variable assignemt has not yet been added.\n");
+		if (token == "<-")
+			break;
 
 		if (current_type)
 		{
 			// This checks if there is another variable with the same name
 			// TODO: Each function should have its own list of local and global vars rather than just every var. Add a function called get_local_variable_token which just checks for variables in this owner and global owner
 			// TODO: This should check if the variable name is valid
-			if (get_variable_token(token)) 
-				error::send_error("A variable with that name already exists.\n");
-
+			// TODO: Adding to the inputs should use the local variable
 			stack_space_needed -= types_size[current_type];
 			add_variable_token(token, current_type, symbol_table.functions.size()-1, stack_space_needed);
+			_inputs.push_back(get_variable_token(token));
 			current_type = 0;
 		}
 		// If this variable is the type
@@ -364,60 +345,104 @@ inline void function_into_inter(std::string *token_itr)
 
 		token_itr++;
 	}
-	token_itr += 1;
-	add_inter(FUNC_BEGIN, get_function_token(name)->id);
-	add_statment(FUNC_END);
-	#if DEBUG
-		std::cout << *token_itr << "\n"; // TODO: REMOVE THIS TEST LINE!
-	#endif
+	token_itr++;
 
+	if (*token_itr != "$")
+		error::send_error("Expected '$' before function name.\n");
+	token_itr++;
+
+	std::string name = (*token_itr).substr(0, (*token_itr).find('(') );
+
+	if(!is_str_letters(name)) 
+		error::send_error("The function name: " + name + " contains invalid characters.\n");
+	if(get_function_token(name)) 
+		error::send_error("The function name: " + name + " is already used.\n");
+	if(!is_valid_name(name))
+		error::send_error("The function name: " + name + " isn't valid.\n");
+
+	add_function_token(name, _output, _inputs);
+	add_inter(FUNC_BEGIN, 0, 0, 0, get_function_token(name));
+	add_statment(FUNC_END);
+
+	token_itr++;
+	if (*(token_itr) != "$")
+		error::send_error("Expected '$' after a function name.\n");
+
+	token_itr++;
 	if (*(token_itr) != "{")
-		error::send_error("Expected '{' after a function defintion.\n");
+		error::send_error("Expected '{' after a function definition.\n");
+
+	incraments = token_itr - initial_itr;
 }
 
 // Returns true if it added something. "incramntes" is the amount of incraments
 // done to "token_itr"
+// TODO: The incraments is a quick patch and should be replaced with something
+// that makes more sense.
 inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 {
+	if (*token_itr == "$")
+	{
+		// itr is over the function name now
+		token_itr++;
+
+		if (!get_function_token(*token_itr))
+			error::send_error("Unknown function: " + *token_itr + ".\n");
+		
+		function_call_inter_prep(*get_function_token(*token_itr));
+		add_function_call_operand(get_function_token(*token_itr));
+
+		if (*(token_itr+1) != "$")
+			error::send_error("Expected an '$' after a function call.\n");
+
+		token_itr += 2;
+		incraments += 3;
+
+		return true;
+	}
 	if (*token_itr == "if")
 	{
+		if (!value_in_r0.final_type)
+			top_operand_to_inter();
+		value_in_r0 = operand::operand_def(0,0,0,0);
+
 		add_inter(IF_BEGIN);
 		add_statment(IF_END);
 		token_itr++;
 		incraments++;
 		if (*(token_itr) != "{") 
 			error::send_error("Expected '{' after an if statment.\n");
-		if (!value_in_r0.final_type)
-			top_operand_to_inter();
-		value_in_r0 = operand::operand_def(0,0,0,0);
 		return true;
 	}
 	if (*token_itr == "else")
 	{
 		if (inter_output[inter_output.size()-1].id != IF_END)
 			error::send_error("Expected an end to an if statment before an else statment.\n");
-		
 		token_itr++;
 		incraments++;
-		
 		if (*(token_itr) != "{" && *(token_itr) != "if")
 			error::send_error("Expected '{' or if statment after else statment.\n");
-
 		add_inter(ELSE_BEGIN);
 		add_statment(ELSE_END);
 		return true;
 	}
 	if (*token_itr == "while")
 	{
+		if (!value_in_r0.final_type)
+			top_operand_to_inter();
+		value_in_r0 = operand::operand_def(0,0,0,0);
+
 		add_inter(WHILE_BEGIN);
 		add_statment(WHILE_END);
 		token_itr++;
 		incraments++;
-
 		if (*(token_itr) != "{") 
 			error::send_error("Expected '{' after a while statment.\n");
-
-		top_operand_to_inter();
+		return true;
+	}
+	if (*token_itr == "fn")
+	{
+		function_into_inter(token_itr, incraments);
 		return true;
 	}
 	if (is_str_letters(*token_itr))
@@ -437,18 +462,14 @@ inline bool statment_into_inter(std::string *token_itr, u32 &incraments)
 			add_variable_token(*token_itr, inter_output[inter_output.size()-1].type, current_owner, current_stack);
 			add_inter(VARIABLE_DECLERATION, 0, 0, get_variable_token(*token_itr));
 		}
-		else 
+		else
 		{
 			// We check if the variable is in the symbol table, if not we send an error
 			if (!get_variable_token(*token_itr))
 				error::send_error("Unknown variable: " + *token_itr + ".\n");
 			add_inter(VARIABLE_ACCESS, get_variable_token(*token_itr)->id);
+			add_variable_operand(get_variable_token(*token_itr));
 		}
-		return true;
-	}
-	if (*token_itr == "fn")
-	{
-		function_into_inter(token_itr);
 		return true;
 	}
 
@@ -480,7 +501,7 @@ std::vector<inter> file_into_inter(std::vector<std::string> file)
 			continue;
 		}
 
-		error::send_error("Unknown token: " + *itr + ".\n");
+		error::send_error("Unknown token: \"" + *itr + "\".\n");
 	}
 
 	if (statment_stack.size())

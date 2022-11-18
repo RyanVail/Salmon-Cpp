@@ -13,7 +13,7 @@ namespace postprocessor
     // This is called by "intermediate.cpp" if it hits a '#'
     void process_instruction(std::string *itr, std::vector<inter> &inter_output)
     {
-        if (*(itr+1) == "extern")
+        /*if (*(itr+1) == "extern")
         {
             // TODO: This should use the -> after a function name return type
             // not the before the function name it uses now for some reason.
@@ -34,7 +34,7 @@ namespace postprocessor
                 error::send_error("The external function name: " + _name + " isn't valid.\n");
 
             // The function inputs are variables with just types
-            std::vector<variable_token> _inputs;
+            std::vector<variable_token*> _inputs;
 
             // ==== Gets function inputs ====
             while (true)
@@ -51,12 +51,13 @@ namespace postprocessor
                     // This adds the current type into the input of the function
                     if (!into_id(token))
                         error::send_error("Unknown type in external function: " + token + ".\n");
+                    add_variable_token(token, current_type, symbol_table.functions.size()-1, stack_space_needed);
                     _inputs.push_back(variable_token(into_id(token)));
                 itr++;
             }
             add_function_token(_name, _return_type, _inputs);
             itr += 1;
-        }
+        }*/
         if (*(itr+1) == "asm")
         {
             std::string output_asm;

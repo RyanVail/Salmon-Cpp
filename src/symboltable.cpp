@@ -22,7 +22,7 @@ variable_token* get_variable_token(std::string name, i32 id)
 	{
 		if (name == "" && current_variable.id == id)
 			return &current_variable;
-		if (name != "" && current_variable.name == name)
+		else if (current_variable.name == name)
 			return &current_variable;
 	}
 
@@ -35,8 +35,8 @@ void calc_function_stack_size()
 {
 	// Calculates all function's needed stack spaces
 	for (function_token &current_function : symbol_table.functions)
-		for (variable_token &current_variable : current_function.inputs)
-			current_function.stack_space_needed += types_size[current_variable.type];
+		for (variable_token* current_variable : current_function.inputs)
+			current_function.stack_space_needed += types_size[current_variable->type];
 
 	// Calculates global stack's size
 	for (variable_token &current_variable : symbol_table.variables)
@@ -72,7 +72,7 @@ function_token* get_function_token(std::string name, i32 id)
 {
 	for (function_token &current_function : symbol_table.functions)
 	{
-		if (id && current_function.id == id)
+		if (name == "" && current_function.id == id)
 			return &current_function;
 		else if (current_function.name == name)
 			return &current_function;
@@ -86,7 +86,7 @@ void add_variable_token(std::string name, u8 type, i32 owner, i32 stack_location
 {
 	// TODO: This should make sure it is a valid variable name
 	// TODO: This should check local variable
-	if (get_variable_token(name) != 0)
+	if (get_variable_token(name) != nullptr)
 		error::send_error("The variable name: " + name + " is already used.");
 
 	variable_token new_token = variable_token(name, type, owner, stack_location);
@@ -108,7 +108,7 @@ i32 get_stack_space_needed(i32 id)
 
 // This adds a function to the list of functions based on name, 
 // returns, and inputs.
-void add_function_token(std::string _name, u8 _output, std::vector<variable_token> _inputs)
+void add_function_token(std::string _name, u8 _output, std::vector<variable_token*> _inputs)
 {
 	if (!is_valid_name(_name))
 		error::send_error("The function name: " + _name + "is not valid.");
