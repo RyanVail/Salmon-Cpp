@@ -1,5 +1,7 @@
 # The Salmon Programming Language
 
+I'm no longer continuing development on this compiler. I write my C++ like C and by the time I was done I prefered writting C, and I learned more about the inner working of programming while doing it. This project also was not very thought out and writing it over again was better than turning it upside down trying to fix it. So with that, I'm done working on this.
+
 This is a compiler for an esoteric-like programming language that is proably going to be called Salmon.
 <br><br>
 # Contents
